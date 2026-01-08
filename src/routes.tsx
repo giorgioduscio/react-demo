@@ -18,11 +18,11 @@ const routes = [
         element: <Ordinazioni />,
       },
       {
-        path: '/resoconto',
+        path: '/ordinations',
         element: <Resoconto />,
       },
       {
-        path: '/storico',
+        path: '/cart',
         element: <Storico />,
       },
     ],

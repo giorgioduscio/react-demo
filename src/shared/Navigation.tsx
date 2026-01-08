@@ -1,26 +1,34 @@
-import { Link } from 'react-router-dom';
-import './Navigation.scss';
+import { Link, useLocation } from 'react-router-dom';
 
 export function Navigation() {
+  const sezioni =[
+    { label:"Home", icon:'bi-house', path:'/' },
+    { label:"Ordinazioni", icon:'bi-basket', path:'/ordinations' },
+    { label:"Carrello", icon:'bi-cart3', path:'/cart' },
+  ]
+
+  const location = useLocation();
+  function selectedClass(path:string){
+    return location.pathname===path ?'btn-primary':'btn-outline-secondary'
+  }
+
   return (
-    <nav className="navigation">
-      <ul className="nav-list">
-        <li className="nav-item">
-          <Link to="/ordinazioni" className="nav-button">
-            Ordinazioni
-          </Link>
-        </li>
-        <li className="nav-item">
-          <Link to="/resoconto" className="nav-button">
-            Resoconto
-          </Link>
-        </li>
-        <li className="nav-item">
-          <Link to="/storico" className="nav-button">
-            Storico
-          </Link>
-        </li>
-      </ul>
-    </nav>
+    <>
+      {/* Barra di navigazione inferiore con pulsanti */}
+      <nav className="fixed-bottom navbar justify-content-evenly">
+        {sezioni.map((sezione, i)=>(
+          <div key={i}>
+            <Link to={sezione.path}
+                  className={"p-1 btn min-w-60px h-60px " + selectedClass(sezione.path)}
+                  id={sezione.label.toLowerCase()}>
+              <div className="d-flex flex-column align-items-center">
+                <i className={'h2 m-0 bi '+sezione.icon} ></i>
+                <span className="fs-7 text-truncate">{sezione.label}</span>
+              </div>
+            </Link>
+          </div>
+        ))}
+      </nav>
+    </>
   );
 }
