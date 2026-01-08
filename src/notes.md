@@ -1,0 +1,4 @@
+applicazione
+- ordinazioni
+- resoconto
+- storico
