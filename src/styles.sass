@@ -1,0 +1,113 @@
+html, body
+  --c1: #303030
+  --c2: #0d47a1
+  --c3: #1976d2
+  --c4: #c00
+  --c5: #fff
+  --st: #00000050
+
+  margin: 0
+  min-height: 100vh
+  background: var(--c1) !important
+  font-family: Roboto, "Helvetica Neue", sans-serif
+
+*
+  box-sizing: border-box
+  transition: 0.3s
+  outline: none
+  color: var(--c5)
+
+/* INPUT */
+label
+  font-style: italic
+
+.form-control, .form-select
+  background: transparent !important
+  color: white !important
+  appearance: auto !important
+  resize: none !important
+
+input.form-control:focus
+  background: transparent
+  color: white
+
+*::placeholder
+  color: inherit !important
+
+/* MODIFICA CLASSI BOOTSTRAP */
+a
+  text-underline-offset: 5px
+  font-style: italic
+
+.form-control::placeholder
+  color: #ffffff80 !important
+
+/* PSEUDO BOOTSTRAP */
+.flex-1
+  flex: 1
+
+.flex-auto
+  flex: auto
+
+.bg-transparent
+  background: transparent
+
+.font-size-1
+  font-size: 0.2rem
+
+.font-size-2
+  font-size: 0.4rem
+
+.font-size-3
+  font-size: 0.6rem
+
+.font-size-4
+  font-size: 0.8rem
+
+.font-size-5
+  font-size: 1rem
+
+.border
+  border-color: inherit !important
+
+.text-bg-c1
+  background-color: var(--c1) !important
+  color: var(--c5) !important
+
+.text-bg-c2
+  background-color: var(--c2) !important
+  color: var(--c5) !important
+
+.text-bg-c3
+  background-color: var(--c3) !important
+  color: var(--c5) !important
+
+.text-bg-c4
+  background-color: var(--c4) !important
+  color: var(--c5) !important
+
+.text-bg-c5
+  background-color: var(--c5) !important
+  color: var(--c1) !important
+
+/* Page Layout */
+.page-container
+  padding: 1rem
+  max-width: 1200px
+  margin: 0 auto
+
+.content-card
+  background-color: var(--c2)
+  color: var(--c5)
+  padding: 1.5rem
+  border-radius: 8px
+  margin: 1rem 0
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1)
+
+.theme-toggle-container
+  padding: 1rem
+  text-align: right
+  background-color: var(--c1)
+
+.theme-toggle
+  margin-right: 1rem
