@@ -1,7 +1,7 @@
 import App from './App';
+import { Cart } from './pages/Cart';
+import { Home } from './pages/Home';
 import { Ordinazioni } from './pages/Ordinazioni';
-import { Resoconto } from './pages/Resoconto';
-import { Storico } from './pages/Storico';
 
 const routes = [
   {
@@ -11,19 +11,15 @@ const routes = [
     children: [
       {
         path: '/',
-        element: <Ordinazioni />,
-      },
-      {
-        path: '/ordinazioni',
-        element: <Ordinazioni />,
+        element: <Home />,
       },
       {
         path: '/ordinations',
-        element: <Resoconto />,
+        element: <Ordinazioni />,
       },
       {
         path: '/cart',
-        element: <Storico />,
+        element: <Cart />,
       },
     ],
   },

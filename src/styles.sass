@@ -1,9 +1,9 @@
 html, body
-  --c1: #303030
-  --c2: #0d47a1
-  --c3: #1976d2
-  --c4: #c00
-  --c5: #fff
+  --c1: #2F4F4F  /* Nero Carboncino - Più scuro */
+  --c2: #8B4513  /* Marrone Terra */
+  --c3: #D2B48C  /* Marrone Chiaro */
+  --c4: #F5DEB3  /* Beige Sabbia */
+  --c5: #FFF8DC  /* Bianco Crema - Più chiaro */
   --st: #00000050
 
   margin: 0
@@ -17,6 +17,14 @@ html, body
   outline: none
   color: var(--c5)
 
+#AppComponent
+  height: 100vh
+  background-image: url('/sfondo-legno.jpg')
+  background-size: cover
+  background-position: center
+  background-attachment: fixed
+  background-repeat: no-repeat
+  
 /* INPUT */
 label
   font-style: italic
@@ -68,6 +76,10 @@ a
 .border
   border-color: inherit !important
 
+.text-bg-st
+  background-color: var(--st) !important
+  color: var(--c5) !important
+
 .text-bg-c1
   background-color: var(--c1) !important
   color: var(--c5) !important
@@ -78,7 +90,7 @@ a
 
 .text-bg-c3
   background-color: var(--c3) !important
-  color: var(--c5) !important
+  color: var(--c1) !important
 
 .text-bg-c4
   background-color: var(--c4) !important

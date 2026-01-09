@@ -1,12 +1,12 @@
 export function Ordinazioni() {
   return (
     <div className="page-container">
-      <h1>Ordinazioni</h1>
-      <p>Gestione delle ordinazioni attive.</p>
+      <h1>Resoconto</h1>
+      <p>Visualizzazione del resoconto giornaliero.</p>
       <div className="content-card">
-        <h2>Ordinazioni Correnti</h2>
-        <p>Visualizza e gestisci le ordinazioni in corso.</p>
-        {/* Aggiungi qui la logica per le ordinazioni */}
+        <h2>Dati Giornalieri</h2>
+        <p>Statistiche e riepilogo delle attività odierne.</p>
+        {/* Aggiungi qui la logica per il resoconto */}
       </div>
     </div>
   );
