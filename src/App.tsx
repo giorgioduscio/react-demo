@@ -5,8 +5,8 @@ export default function App() {
   return (
     <div id='AppComponent' className='bg-wood'>
       <div className="text-bg-st" style={{height: '100vh'}}>
-      <Outlet />
-      <Navigation />
+        <Outlet />
+        <Navigation />
       </div>
     </div>
   );

@@ -11,3 +11,9 @@ export type Table = {
   key: string;
   avaiable: boolean;
 }
+
+export interface CartItem {
+  id: number;
+  articleId: number;
+  quantity: number;
+}

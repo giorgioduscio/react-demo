@@ -13,7 +13,7 @@ export function Navigation() {
   }
 
   return (
-    <div className='py-3'>
+    <div className='py-5'>
       {/* Barra di navigazione inferiore con pulsanti */}
       <nav className="fixed-bottom navbar justify-content-evenly text-bg-c1">
         {sezioni.map((sezione, i)=>(
