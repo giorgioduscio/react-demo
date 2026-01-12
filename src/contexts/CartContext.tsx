@@ -2,7 +2,7 @@ import { createContext, useState, useContext, type ReactNode } from 'react';
 import { type CartItem } from '../interfaces/datas';
 
 const CartContext = createContext<{
-  get: Function;
+  get: (article_id?:number)=> CartItem | CartItem[] |undefined;
   add: (articleId: number, quantity: number) => void;
   remove: (itemId: number) => void;
   update: (itemId: number, newQuantity: number) => void;

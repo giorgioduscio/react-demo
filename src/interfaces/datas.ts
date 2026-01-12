@@ -17,3 +17,10 @@ export interface CartItem {
   articleId: number;
   quantity: number;
 }
+
+export interface Order{
+  id: number;
+  date: string;
+  items: CartItem[];
+  total: number;
+}

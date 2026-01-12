@@ -4,10 +4,10 @@ import { Navigation } from './shared/Navigation';
 export default function App() {
   return (
     <div id='AppComponent' className='bg-wood'>
-      <div className="text-bg-st" style={{height: '100vh'}}>
+      <div className="content-wrapper">
         <Outlet />
-        <Navigation />
       </div>
+      <Navigation />
     </div>
   );
 }

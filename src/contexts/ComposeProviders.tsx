@@ -2,6 +2,7 @@ import { type JSX, type ReactNode } from 'react';
 import { ThemeProvider } from './ThemeContext';
 import { TablesProvider } from './TablesContext';
 import { CartProvider } from './CartContext';
+import { HistoryProvider } from './HistoryContext';
 
 type Provider = ({ children }: { children: ReactNode }) => JSX.Element;
 
@@ -10,7 +11,7 @@ interface ComposeProvidersProps {
   children: ReactNode;
 }
 
-const providers = [ThemeProvider, TablesProvider, CartProvider];
+const providers = [ThemeProvider, TablesProvider, CartProvider, HistoryProvider];
 function ComposeProviders({ providers, children }: ComposeProvidersProps) {
   return (
     <>

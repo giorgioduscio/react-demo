@@ -2,9 +2,9 @@ import { Link, useLocation } from 'react-router-dom';
 
 export function Navigation() {
   const sezioni =[
-    { label:"Home", icon:'bi-house', path:'/' },
-    { label:"Ordinazioni", icon:'bi-basket', path:'/ordinations' },
+    { label:"Piatti", icon:'bi-fork-knife', path:'/dishes' },
     { label:"Carrello", icon:'bi-cart3', path:'/cart' },
+    { label:"Ordine", icon:'bi-clipboard-check', path:'/order' },
   ]
 
   const location = useLocation();

@@ -1,9 +1,10 @@
 import React, { useState } from 'react';
 import { articles } from '../assets/articles';
 import { useCart } from '../contexts/CartContext';
+import type { CartItem } from '../interfaces/datas';
 
-export function Ordinazioni() {
-  document.title = 'Ordinazioni'
+export function Dishes() {
+  document.title = 'Piatti'
  
   function getArticles() {
     const ordine =['antipasti', 'primi', 'pizze', 'secondi carne', 'secondi pesce', 'bibite'];
@@ -17,7 +18,7 @@ export function Ordinazioni() {
   }
 
   return(
-    <article id="Ordinazioni" className="container p-0">
+    <article id="Dishes" className="container p-0">
       <header className="p-3 mb-3 text-bg-c3 shadow">
         <h1 className="m-0">Menu Ristorante</h1>
       </header>
@@ -41,7 +42,9 @@ export function Ordinazioni() {
                   <span>{article.label}</span>
                 </h4>
 
-                <img src={article.imageUrl} alt={article.label} className='w-100 max-h-200px'/>
+                <figure>
+                  <img src={article.imageUrl} alt={article.label} className='w-100 max-h-200px'/>
+                </figure>
 
                 <div className='p-3'>
                   <div>{article.description}</div>
@@ -64,7 +67,7 @@ function Counter({ articleId }: { articleId: number }) {
   const { add, get } = useCart();
 
   const [quantity, setQuantity] = useState(() => {
-    const cartItem = get(articleId);
+    const cartItem = get(articleId) as CartItem;
     return cartItem ? cartItem.quantity : 0;
   });
   

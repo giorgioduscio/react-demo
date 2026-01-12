@@ -1,7 +1,8 @@
+import { Navigate } from 'react-router-dom';
 import App from './App';
 import { Cart } from './pages/Cart';
-import { Home } from './pages/Home';
-import { Ordinazioni } from './pages/Ordinazioni';
+import { Order } from './pages/Order';
+import { Dishes } from './pages/Dishes';
 
 const routes = [
   {
@@ -10,17 +11,21 @@ const routes = [
     errorElement: <div>Not Found</div>,
     children: [
       {
-        path: '/',
-        element: <Home />,
+        path: '/order',
+        element: <Order />,
       },
       {
-        path: '/ordinations',
-        element: <Ordinazioni />,
+        path: '/dishes',
+        element: <Dishes />,
       },
       {
         path: '/cart',
         element: <Cart />,
       },
+      {
+        path: '/',
+        element: <Navigate to="/dishes" replace />
+      }
     ],
   },
 ];

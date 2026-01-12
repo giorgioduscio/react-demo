@@ -1,8 +1,8 @@
 import { useTables } from "../contexts/TablesContext";
 import { toast } from "../tools/feedbacksUI";
 
-export function Home() {
-  document.title ='Home'
+export function Order() {
+  document.title ='Ordine'
   const { tables, setTables, selectedTable, setSelectedTable } = useTables();
 
   function getTables() {
@@ -45,9 +45,9 @@ export function Home() {
     toast('Tavolo selezionato')
   }
   
-  return <div id="Home" className="container p-0">
+  return <article id="Order" className="container p-0">
     <header className="p-3 mb-3 text-bg-c3 shadow">
-      <h1 className="m-0">Home</h1>
+      <h1 className="m-0">Ordinazione</h1>
     </header>
 
     <main className="p-2">
@@ -70,5 +70,5 @@ export function Home() {
       </div>
     </main>
 
-  </div>
+  </article>
 }
