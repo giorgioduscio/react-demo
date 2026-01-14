@@ -3,11 +3,12 @@ import { Navigation } from './shared/Navigation';
 
 export default function App() {
   return (
-    <div id='AppComponent' className='bg-wood'>
-      <div className="content-wrapper">
+    <div className="bg-wood">
+      <div className='text-bg-st' 
+          style={{minHeight:'100vh'}}>
         <Outlet />
+        <Navigation />
       </div>
-      <Navigation />
     </div>
   );
 }

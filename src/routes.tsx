@@ -1,8 +1,9 @@
 import { Navigate } from 'react-router-dom';
 import App from './App';
 import { Cart } from './pages/Cart';
-import { Order } from './pages/Order';
+import { History } from './pages/History';
 import { Dishes } from './pages/Dishes';
+import { Payment } from './pages/Payment';
 
 const routes = [
   {
@@ -11,8 +12,8 @@ const routes = [
     errorElement: <div>Not Found</div>,
     children: [
       {
-        path: '/order',
-        element: <Order />,
+        path: '/history',
+        element: <History />,
       },
       {
         path: '/dishes',
@@ -21,6 +22,10 @@ const routes = [
       {
         path: '/cart',
         element: <Cart />,
+      },
+      {
+        path: '/payment',
+        element: <Payment />,
       },
       {
         path: '/',

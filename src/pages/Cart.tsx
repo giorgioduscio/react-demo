@@ -2,23 +2,37 @@ import React from 'react';
 import { useCart } from '../contexts/CartContext';
 import { useHistory } from '../contexts/HistoryContext';
 import { articles } from '../assets/articles';
+import { toast } from "../tools/feedbacksUI";
 import type { CartItem } from '../interfaces/datas';
 import type { Article } from '../interfaces/datas';
-import type { Order } from '../interfaces/datas';
+import { useNavigate } from 'react-router-dom';
 
 export function Cart() {
   document.title = 'Carrello';
-  const Cart = useCart();
-  const { get: getHistory, add: addToHistory } = useHistory();
-  const [cartItems, setCartItems] = React.useState<CartItem[]>(() => Cart.get() as CartItem[]);
-  const [historyItems, setHistoryItems] = React.useState<Order[]>(() => getHistory() as Order[]);  
-  
+  const navigate = useNavigate();
+  const cartContext = useCart();
+  const historyContext = useHistory();
+  const [cartItems, setCartItems] = React.useState<CartItem[]>(() => cartContext.get() as CartItem[]);  
+
+  // Aggiorna lo stato locale quando il carrello cambia
+  React.useEffect(() => {
+    setCartItems(cartContext.get() as CartItem[]);
+  }, [cartContext.get]);
+
+
+
   // Ritorna un array di oggetti che uniscono l'item del carrello con il rispettivo articolo
   function mergeCartArticles(cartParam: CartItem[]): (Article & CartItem)[] {
     return cartParam.map(item => {
       const articleMatch = articles.find(article => article.id === item.articleId);
       if (!articleMatch) return null;
-      return { ...item, ...articleMatch };
+      // Preserve the cart item's ID and add article data
+      return { 
+        ...articleMatch, 
+        id: item.id,        // Keep the cart item's unique ID
+        articleId: item.articleId,  // Keep the articleId reference
+        quantity: item.quantity     // Keep the quantity
+      };
     }).filter((item): item is Article & CartItem => item !== null);
   }
 
@@ -33,38 +47,39 @@ export function Cart() {
   // Gestione della quantità
   function handleQuantityChange(itemId: number, newQuantity: number){
     if (newQuantity <= 0) {
-      Cart.remove(itemId);
-      setCartItems(Cart.get() as CartItem[]);
+      cartContext.remove(itemId);
+      toast("Elemento rimosso", "danger")
     } else {
-      Cart.update(itemId, newQuantity);
-      setCartItems(Cart.get() as CartItem[]);
+      cartContext.update(itemId, newQuantity);
+      toast("Elemento modificato", "success")
     }
+    setCartItems(cartContext.get() as CartItem[]);
   };
 
-  // Aggiorna lo stato locale quando il carrello cambia
-  React.useEffect(() => {
-    setCartItems(Cart.get() as CartItem[]);
-  }, [Cart.get]);
-
-  // Aggiorna lo stato locale quando lo storico cambia
-  React.useEffect(() => {
-    setHistoryItems(getHistory() as Order[]);
-  }, [getHistory]);
-
-  // Funzione per confermare l'ordine e aggiungerlo allo storico
-  function handleConfirmOrder() {
-    if (cartItems.length === 0) return;
-
+  function doPayment(){
+    // Crea un nuovo ordine con gli articoli del carrello
     const newOrder = {
-      id: historyItems.length + 1,
+      id: 0, // L'ID verrà assegnato automaticamente dal context
       date: new Date().toISOString(),
-      items: cartItems,
-      total: calculateTotal(),
+      items: [...cartItems],
+      total: calculateTotal()
     };
+    cartContext.number_set(`${Math.floor(Math.random() *100)}`)
 
-    addToHistory(newOrder);
-    Cart.clear();
+    // Aggiungi l'ordine allo storico
+    historyContext.add(newOrder);
+    
+    // Svuota il carrello
+    cartContext.clear();
+    
+    // Aggiorna lo stato locale
     setCartItems([]);
+    
+    // Mostra un messaggio di successo
+    toast("Ordine effettuato!", "success");
+    
+    // Naviga alla pagina di pagamento
+    navigate('/payment?method=takeAway')
   }
 
   return (
@@ -73,10 +88,10 @@ export function Cart() {
         <h1 className="m-0">Carrello</h1>
       </header>
 
-
-      <section className="m-2 p-2 border rounded text-bg-st">
+      {/* CARRELLO */}
+      <section className="p-2">
         {cartItems.length === 0 ? 
-          <div className="text-bg-c3 rounded p-3 m-4 text-center">
+          <div className="text-bg-c3 rounded p-3 text-center">
             <h3>Il carrello è vuoto</h3>
             <p className='text-bg-c3'>Aggiungi articoli dal menu per iniziare a ordinare.</p>
           </div>
@@ -84,7 +99,6 @@ export function Cart() {
           <main>
             <h2>Il Tuo Ordine</h2>
             <p>Riepilogo degli articoli selezionati</p>
-
             
 
             {/* Riepilogo totale */}
@@ -93,23 +107,9 @@ export function Cart() {
               <span>{calculateTotal().toFixed(2)}€</span>
             </h3>
 
-            {/* Pulsanti azione */}
-            <div className="my-3 d-grid gap-2 cols-auto-auto">
-              <button onClick={Cart.clear}
-                      className="btn btn-danger">
-                Svuota Carrello
-              </button>
-
-              <button className="btn btn-success"
-                      disabled={cartItems.length === 0}
-                      onClick={handleConfirmOrder}>
-                Conferma Ordine
-              </button>
-            </div>
-
             <div className="d-grid cols-auto-1fr gap-2 align-items-start">
               {mergeCartArticles(cartItems).map((item, i) =>  <React.Fragment key={i}>
-                <button onClick={() => Cart.remove(item.id)}
+                <button onClick={() => cartContext.remove(item.id)}
                         className="btn btn-danger">
                   <i className="bi bi-trash"></i>
                 </button>
@@ -123,11 +123,18 @@ export function Cart() {
                   <div className="small">Prezzo unitario: {item.price}€</div>
 
                   <div className="d-flex align-items-center mt-2">
-                    <button onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
-                            className="btn btn-secondary circle h-40px max-w-40px"
-                            disabled={item.quantity <= 1}>
-                      <i className="bi bi-dash"></i>
-                    </button>
+                    {item.quantity==1 ?
+                      <button onClick={() => cartContext.remove(item.id)}
+                              className="btn btn-danger">
+                        <i className="bi bi-trash"></i>
+                      </button>
+                    : /*item.quantity==1*/
+                      <button onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
+                              className="btn btn-secondary circle h-40px max-w-40px"
+                              disabled={item.quantity <= 1}>
+                        <i className="bi bi-dash"></i>
+                      </button>
+                    }
 
                     <span className="px-3">{item.quantity}</span>
 
@@ -141,42 +148,17 @@ export function Cart() {
               </React.Fragment>)}
             </div>
 
-          </main>
-        }
-      </section>
-
-
-      {/* STORICO */}
-      <section className='p-2 m-2 border rounded text-bg-st'>
-        {historyItems.length === 0 ? 
-          <div className="text-bg-c3 rounded p-3 m-4 text-center">
-            <h3>Lo storico è vuoto</h3>
-            <p className='text-bg-c3'>Non è stato ancora effettuato ancora nessun ordine</p>
-          </div>
-
-        : /*lenght>0*/
-          <main className=''>
-            <h3>Storico ordinazioni</h3>
-            {historyItems.reverse().map((order) => (
-              <div key={order.id} className="p-3 my-3 rounded text-bg-c1">
-                <div className="d-flex justify-content-between mb-2">
-                  <strong>Ordine #{order.id}</strong>
-                  <span>{new Date(order.date).toLocaleString()}</span>
-                </div>
-
-                <div className="mb-2">
-                  <strong>Totale:</strong> {order.total.toFixed(2)}€
-                </div>
-
-                <div className="d-grid gap-1 cols-auto-1fr-auto">
-                  {mergeCartArticles(order.items).map((item) => <React.Fragment key={item.id}>
-                    <i className="bi bi-dot"></i>
-                    <b>{item.label} {item.quantity>1 ? '×'+item.quantity : ''}</b>
-                    <span>{(item.price * item.quantity).toFixed(2)}€</span>
-                  </React.Fragment>)}
-                </div>
-              </div>
-            ))}
+            <div data-btn-wrapper className='py-2 d-grid gap-2'>
+              {/* <button className="btn btn-primary" 
+                      onClick={() => navigate('/payment?method=table')}
+                      >Ordinare al tavolo</button>
+              <button className="btn btn-primary" 
+                      onClick={() => navigate('/payment?method=takeaway')}
+                      >Ordinare da asporto</button> */}
+              <button className="btn btn-primary" 
+                      onClick={doPayment}
+                      >Ordinare da portare via</button>
+            </div>
           </main>
         }
       </section>

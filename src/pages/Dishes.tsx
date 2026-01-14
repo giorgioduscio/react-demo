@@ -42,7 +42,7 @@ export function Dishes() {
                   <span>{article.label}</span>
                 </h4>
 
-                <figure>
+                <figure className='m-0'>
                   <img src={article.imageUrl} alt={article.label} className='w-100 max-h-200px'/>
                 </figure>
 

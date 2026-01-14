@@ -7,6 +7,8 @@ const CartContext = createContext<{
   remove: (itemId: number) => void;
   update: (itemId: number, newQuantity: number) => void;
   clear: () => void;
+  number_get: ()=>string,
+  number_set: (newValue:string) => void,
 } | undefined>(undefined);
 
 export function useCart(){
@@ -19,7 +21,7 @@ export function useCart(){
 
 export function CartProvider({ children }:{ children: ReactNode }){
   const [cart, setCart] = useState<CartItem[]>([]);
-
+  const [_orderNumber, _setOrderNumber] =useState('')
   const actions ={
     get(article_id?:number){
       if(article_id===undefined) return cart;
@@ -66,6 +68,15 @@ export function CartProvider({ children }:{ children: ReactNode }){
     clear(){
       setCart([]);
     },
+
+    // NUMERO ORDINE
+    number_get(){
+      return _orderNumber;
+    },
+    number_set(newValue:string){
+      if(newValue && typeof newValue=='string')
+        _setOrderNumber(newValue)
+    }
   }
 
   return (

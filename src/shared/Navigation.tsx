@@ -4,7 +4,7 @@ export function Navigation() {
   const sezioni =[
     { label:"Piatti", icon:'bi-fork-knife', path:'/dishes' },
     { label:"Carrello", icon:'bi-cart3', path:'/cart' },
-    { label:"Ordine", icon:'bi-clipboard-check', path:'/order' },
+    { label:"Storico", icon:'bi-clock-history', path:'/history' },
   ]
 
   const location = useLocation();
