@@ -33,7 +33,10 @@ export function Dishes() {
             <React.Fragment key={i}>
               {/* Mostra l'intestazione se è il primo articolo della categoria o se la categoria cambia */}
               {i === 0 || article.section !== _articles[i - 1].section ? (
-                <h3 className='mt-3 p-3 w-100 text-bg-c2 rounded' id={`section-${article.section}`}>{article.section}</h3>
+                <h3 className='mt-3 p-3 w-100 text-bg-c2 rounded' 
+                    id={`section-${article.section}`}>
+                  {article.section}
+                </h3>
               ) : null}
 
               <div className="border rounded flex-auto max-w-300px text-bg-c1 position-relative" role="listitem" aria-labelledby={`article-${article.id}`}>
@@ -47,7 +50,7 @@ export function Dishes() {
                 </figure>
 
                 <div className='p-3'>
-                  <p>{article.description}</p>
+                  <div>{article.description}</div>
                 </div>
 
                 <Counter articleId={article.id} />
