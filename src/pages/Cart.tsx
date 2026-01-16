@@ -106,15 +106,15 @@ export function Cart() {
   }
 
   return (
-    <article id="Cart" className="container p-0">
-      <header className="p-3 mb-3 text-bg-c3 shadow">
+    <article id="Cart" className="container p-0" lang="it" role="article">
+      <header className="p-3 mb-3 text-bg-c3 shadow" role="banner">
         <h1 className="m-0">Carrello</h1>
       </header>
 
       {/* CARRELLO */}
-      <section className="p-2">
+      <section className="p-2" role="main">
         {cartItems.length === 0 ? 
-          <div className="text-bg-c3 rounded p-3 text-center">
+          <div className="text-bg-c3 rounded p-3 text-center" role="alert">
             <h3>Il carrello è vuoto</h3>
             <p className='text-bg-c3'>Aggiungi articoli dal menu per iniziare a ordinare.</p>
           </div>
@@ -125,22 +125,23 @@ export function Cart() {
             
 
             {/* Riepilogo totale */}
-            <h3 className="p-3 d-grid cols-1fr-auto text-bg-c2 rounded">
+            <h3 className="p-3 d-grid cols-1fr-auto text-bg-c2 rounded" aria-label="Totale del carrello">
               <span>Totale:</span>
-              <span>{calculateTotal().toFixed(2)}€</span>
+              <span aria-live="polite">{calculateTotal().toFixed(2)}€</span>
             </h3>
 
-            <div className="d-grid cols-auto-1fr gap-2 align-items-start">
+            <div className="d-grid cols-auto-1fr gap-2 align-items-start" role="list">
               {mergeCartArticles(cartItems).map((item, i) =>  <React.Fragment key={i}>
                 <button onClick={() => cartContext.remove(item.id)}
-                        className="btn btn-danger">
-                  <i className="bi bi-trash"></i>
+                        className="btn btn-danger"
+                        aria-label={`Rimuovi ${item.label}`}>
+                  <i className="bi bi-trash" aria-hidden="true"></i>
                 </button>
 
-                <div data-card className="min-w-200px text-bg-c1 p-2 rounded">
+                <div data-card className="min-w-200px text-bg-c1 p-2 rounded" role="listitem">
                   <h4 className="d-grid cols-1fr-auto">
                     <span className='text-truncate'>{item.label}</span>
-                    <span>{(item.price * item.quantity).toFixed(2)}€</span>
+                    <span aria-live="polite">{(item.price * item.quantity).toFixed(2)}€</span>
                   </h4>
                   
                   <div className="small">Prezzo unitario: {item.price}€</div>
@@ -148,22 +149,25 @@ export function Cart() {
                   <div className="d-flex align-items-center mt-2">
                     {item.quantity==1 ?
                       <button onClick={() => cartContext.remove(item.id)}
-                              className="btn btn-danger">
-                        <i className="bi bi-trash"></i>
+                              className="btn btn-danger"
+                              aria-label={`Rimuovi ${item.label}`}>
+                        <i className="bi bi-trash" aria-hidden="true"></i>
                       </button>
                     : /*item.quantity==1*/
                       <button onClick={() => handleQuantityChange(item.id, item.quantity - 1)}
                               className="btn btn-secondary circle h-40px max-w-40px"
-                              disabled={item.quantity <= 1}>
-                        <i className="bi bi-dash"></i>
+                              disabled={item.quantity <= 1}
+                              aria-label={`Diminuisci quantità di ${item.label}`}>
+                        <i className="bi bi-dash" aria-hidden="true"></i>
                       </button>
                     }
 
-                    <span className="px-3">{item.quantity}</span>
+                    <span className="px-3" aria-live="polite">{item.quantity}</span>
 
                     <button onClick={() => handleQuantityChange(item.id, item.quantity + 1)}
-                            className="btn btn-primary circle h-40px max-w-40px">
-                      <i className="bi bi-plus"></i>
+                            className="btn btn-primary circle h-40px max-w-40px"
+                            aria-label={`Aumenta quantità di ${item.label}`}>
+                      <i className="bi bi-plus" aria-hidden="true"></i>
                     </button>
                   </div>
 
@@ -172,11 +176,12 @@ export function Cart() {
             </div>
 
             {/* PULSANTI ORDINAZIONE */}
-            <div data-btn-wrapper className='py-2 d-grid gap-2'>
+            <div data-btn-wrapper className='py-2 d-grid gap-2' role="group" aria-label="Opzioni di ordinazione">
               {orderButtons.map((button, i) => 
                 <button key={i} className={"btn btn-"+button.color} 
-                        onClick={button.clickEvent}>
-                  <i className={button.icon +' bi fs-5 mx-2'}></i> 
+                        onClick={button.clickEvent}
+                        aria-label={button.label}>
+                  <i className={button.icon +' bi fs-5 mx-2'} aria-hidden="true"></i> 
                   {button.label}
                 </button>
               )}

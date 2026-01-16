@@ -1,6 +1,5 @@
 import { createContext, useState, useContext, type ReactNode, useEffect } from 'react';
-import { type User } from '../interfaces/structures';
-import type FormField from '../interfaces/structures';
+import { type FormField, type User } from '../interfaces/structures';
 
 const AuthContext = createContext<{
   get: () => User | null;

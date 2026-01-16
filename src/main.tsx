@@ -6,7 +6,7 @@ import { createRoot } from 'react-dom/client';
 import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import routes from './routes.tsx';
 import { ComposeProviders, providers } from './contexts/ComposeProviders.tsx';
-import customStyle from './styles.ts';
+import customStyle from './styles/styles.ts';
 
 customStyle();
 const router = createBrowserRouter(routes);

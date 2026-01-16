@@ -24,15 +24,15 @@ export function History() {
     setHistoryItems(Hystory.get() as Order[]);
   }, [Hystory.get]);
   
-  return <article id="History" className="container p-0">
-    <header className="p-3 mb-3 text-bg-c3 shadow">
+  return <article id="History" className="container p-0" lang="it" role="article">
+    <header className="p-3 mb-3 text-bg-c3 shadow" role="banner">
       <h1 className="m-0">Storico</h1>
     </header>
 
     {/* STORICO */}
-    <section className='p-2'>
+    <section className='p-2' role="main">
       {historyItems.length === 0 ? 
-        <div className="text-bg-c3 rounded p-3 text-center">
+        <div className="text-bg-c3 rounded p-3 text-center" role="alert">
           <h3>Lo storico è vuoto</h3>
           <p className='text-bg-c3'>Non è stato ancora effettuato ancora nessun ordine</p>
         </div>
@@ -40,26 +40,35 @@ export function History() {
       : /*lenght>0*/
         <main className=''>
           <h3>Storico ordinazioni</h3>
-          {historyItems.reverse().map((order) => (
-            <div key={order.id} className="p-3 my-3 rounded text-bg-c1">
-              <div className="d-flex justify-content-between mb-2">
-                <strong>Ordine #{order.id}</strong>
-                <span>{new Date(order.date).toLocaleString()}</span>
-              </div>
+          <div role="list">
+            {historyItems.reverse().map((order) => (
+              <div key={order.id} className="p-3 my-3 rounded text-bg-c1" role="listitem">
+                <div className="d-flex justify-content-between mb-2">
+                  <strong aria-label={`Ordine numero ${order.id}`}>
+                    Ordine #{order.id}</strong>
+                  <span aria-label={`Data dell'ordine: ${new Date(order.date).toLocaleString()}`}>
+                    {new Date(order.date).toLocaleString()}</span>
+                </div>
 
-              <div className="mb-2">
-                <strong>Totale:</strong> {order.total.toFixed(2)}€
-              </div>
+                <div className="mb-2">
+                  <strong>Totale:</strong> 
+                  <span aria-live="polite">{order.total.toFixed(2)}€</span>
+                </div>
 
-              <div className="d-grid gap-1 cols-auto-1fr-auto">
-                {mergeCartArticles(order.items).map((item) => <React.Fragment key={item.id}>
-                  <i className="bi bi-dot"></i>
-                  <b>{item.label} {item.quantity>1 ? '×'+item.quantity : ''}</b>
-                  <span>{(item.price * item.quantity).toFixed(2)}€</span>
-                </React.Fragment>)}
+                <div className="d-grid gap-1 cols-auto-1fr-auto" role="list">
+                  {mergeCartArticles(order.items).map((item) => <React.Fragment key={item.id}>
+                    <i className="bi bi-dot" aria-hidden="true"></i>
+                    <b aria-label={`Articolo: ${item.label}`}>
+                      {item.label} {item.quantity>1 ? '×'+item.quantity : ''}
+                    </b>
+                    <span aria-label={`Prezzo: ${(item.price * item.quantity).toFixed(2)} euro`}>
+                      {(item.price * item.quantity).toFixed(2)}€
+                    </span>
+                  </React.Fragment>)}
+                </div>
               </div>
-            </div>
-          ))}
+            ))}
+          </div>
         </main>
       }
     </section>

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { articles } from '../assets/articles';
 import { useCart } from '../contexts/CartContext';
+import { toast } from '../tools/feedbacksUI';
 
 export function Dishes() {
   document.title = 'Piatti'
@@ -17,36 +18,36 @@ export function Dishes() {
   }
 
   return(
-    <article id="Dishes" className="container p-0">
-      <header className="p-3 mb-3 text-bg-c3 shadow">
+    <article id="Dishes" className="container p-0" lang="it" role="article">
+      <header className="p-3 mb-3 text-bg-c3 shadow" role="banner">
         <h1 className="m-0">Menu Ristorante</h1>
       </header>
 
-      <main className="p-2">
+      <main className="p-2" role="main">
         <h2>Il Nostro Menu</h2>
         <p>Scopri tutte le nostre prelibatezze organizzate per categoria</p>
         
         {/* Menu sections */}
-        <div className="d-flex flex-wrap gap-2">
+        <div className="d-flex flex-wrap gap-2" role="list">
           {getArticles().map((article, i, _articles) => (
             <React.Fragment key={i}>
               {/* Mostra l'intestazione se è il primo articolo della categoria o se la categoria cambia */}
               {i === 0 || article.section !== _articles[i - 1].section ? (
-                <h3 className='mt-3 p-3 w-100 text-bg-c2 rounded'>{article.section}</h3>
+                <h3 className='mt-3 p-3 w-100 text-bg-c2 rounded' id={`section-${article.section}`}>{article.section}</h3>
               ) : null}
 
-              <div className="border rounded flex-auto max-w-300px text-bg-c1 position-relative">
-                <h4 className='p-3 m-0 d-flex gap-2'>
+              <div className="border rounded flex-auto max-w-300px text-bg-c1 position-relative" role="listitem" aria-labelledby={`article-${article.id}`}>
+                <h4 className='p-3 m-0 d-flex gap-2' id={`article-${article.id}`}>
                   <span>{article.price}€</span>
                   <span>{article.label}</span>
                 </h4>
 
                 <figure className='m-0'>
-                  <img src={article.imageUrl} alt={article.label} className='w-100 max-h-200px'/>
+                  <img src={article.imageUrl} alt={`Immagine di ${article.label}`} className='w-100 max-h-200px'/>
                 </figure>
 
                 <div className='p-3'>
-                  <div>{article.description}</div>
+                  <p>{article.description}</p>
                 </div>
 
                 <Counter articleId={article.id} />
@@ -75,11 +76,13 @@ function Counter({ articleId }: { articleId: number }) {
       const newQuantity = quantity + 1;
       setQuantity(newQuantity);
       add(articleId, 1); // Aggiungi al carrello
+      toast("Piatto aggiunto al carrello", "success");
 
     } else if (quantity > 0) {
       const newQuantity = quantity - 1;
       setQuantity(newQuantity);
       add(articleId, -1); // Rimuovi dal carrello (quantità negativa)
+      toast("Piatto rimosso dal carrello", "danger")
     }
   }
   
@@ -88,14 +91,16 @@ function Counter({ articleId }: { articleId: number }) {
          style={{top:'25%', right:'0'}}>
       <div data-counter className='d-flex flex-column align-items-center'>
         <button onClick={()=> handleClick(true)}
-                className='h-40px max-w-40px btn btn-primary circle'>
-          <i className="bi bi-plus-lg"></i>
+                className='h-40px max-w-40px btn btn-primary circle'
+                aria-label="Aumenta quantità">
+          <i className="bi bi-plus-lg" aria-hidden="true"></i>
         </button>
-        <span className='p-2 m-auto'>{quantity}</span>
+        <span className='p-2 m-auto' aria-live="polite">{quantity}</span>
         <button onClick={()=> handleClick(false)}
                 disabled={quantity === 0}
-                className='h-40px max-w-40px btn btn-secondary circle '>
-          <i className="bi bi-dash"></i>
+                className='h-40px max-w-40px btn btn-secondary circle '
+                aria-label="Diminuisci quantità">
+          <i className="bi bi-dash" aria-hidden="true"></i>
         </button>
       </div>
     </div>

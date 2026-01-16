@@ -25,36 +25,40 @@ export function Payment() {
   }
 
   return (
-    <article id="Payment" className="container p-0">
-      <header className="p-3 mb-3 text-bg-c3 shadow d-flex justify-content-between">
+    <article id="Payment" className="container p-0" lang="it" role="article">
+      <header className="p-3 mb-3 text-bg-c3 shadow d-flex justify-content-between" role="banner">
         <h1 className="m-0">Pagamento</h1>
         <button className="btn"
                 onClick={()=> to('/dishes')}
-                ><b className="bi bi-x-lg"></b></button>
+                aria-label="Chiudi pagina di pagamento">
+          <b className="bi bi-x-lg" aria-hidden="true"></b>
+        </button>
       </header>
 
-      <main className="p-2">
+      <main className="p-2" role="main">
         {method=='takeAway'?
           <section id='takeAway'>
 
-            <div className='h1 text-center my-4'>
+            <div className='h1 text-center my-4' aria-label="Numero ordine">
               Numero ordine:
-              <div style={{fontSize:'80px'}}>{CartContext.number_get()}</div>
+              <div style={{fontSize:'80px'}} aria-live="polite">{CartContext.number_get()}</div>
             </div>
 
-            <div className="alert alert-warning">
+            <div className="alert alert-warning" role="alert">
               Attenzione: custodisci questo numero fino alla consegna dell'ordine
             </div>
 
-            <div className="d-flex gap-2">
+            <div className="d-flex gap-2" role="group" aria-label="Opzioni di ordinazione">
               <button className="btn btn-primary d-grid cols-auto-1fr align-items-center"
-                      onClick={()=> to('/dishes')}>
-                <i className="bi bi-fork-knife"></i> 
+                      onClick={()=> to('/dishes')}
+                      aria-label="Ordina di nuovo">
+                <i className="bi bi-fork-knife" aria-hidden="true"></i> 
                 <span>Ordina di nuovo</span>
               </button>
-              <button className="btn btn-secondary d-grid cols-auto-1fr align-items-center"
-                      onClick={()=> to('/history')}>
-                <i className="bi bi-clock-history"></i> 
+              <button className="btn btn-outline-primary d-grid cols-auto-1fr align-items-center"
+                      onClick={()=> to('/history')}
+                      aria-label="Mostra storico">
+                <i className="bi bi-clock-history" aria-hidden="true"></i> 
                 <span>Mostra storico</span>
               </button>
             </div>
@@ -138,10 +142,10 @@ export function TableComponent() {
     toast('Ordine assegnato al tavolo ' + id);
   }
   
-  return <article id="TableComponent" className="p-0">
-    <main className="p-2">
+  return <article id="TableComponent" className="p-0" role="article">
+    <main className="p-2" role="main">
       {selectedTable ?
-        <div className="alert alert-success text-center">
+        <div className="alert alert-success text-center" role="alert">
           è stato selezionato il <b className="text-dark">tavolo {selectedTable?.id}</b>
           <div className="text-dark">Il tuo ordine stato trasmesso</div>
         </div>
@@ -149,11 +153,12 @@ export function TableComponent() {
 
       <h3>Tavoli disponibili</h3>
       <p>Seleziona un tavolo</p>
-      <div className="d-grid cols-1fr-1fr-1fr gap-2">
+      <div className="d-grid cols-1fr-1fr-1fr gap-2" role="grid" aria-label="Tavoli disponibili">
         {getTables() .map((table) => (
           <button key={table.id}
                   className={`text-truncate btn ${table.btnClass}`}
-                  onClick={() => handleClick(table.id)}>
+                  onClick={() => handleClick(table.id)}
+                  aria-label={`Seleziona tavolo ${table.id}`}>
             <small>Tav.</small> {table.id}
           </button>
         ))}
@@ -247,7 +252,7 @@ export function DeliveryComponent() {
 
   if (submitted) {
     return (
-      <div className="text-bg-c3 p-4 rounded">
+      <div className="text-bg-c3 p-4 rounded" role="alert">
         <h2>Successo!</h2>
         <div>Il tuo ordine è stato preso in carico.</div>
         <div>Verrà spedito a <b>{formData.username}</b></div>
@@ -262,12 +267,12 @@ export function DeliveryComponent() {
   return (
     <div className="text-bg-c1 p-4 rounded">
       <h2>Inserisci i dati di consegna</h2>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} aria-label="Form di consegna">
         {formFields.map(field => (
           <div key={field.key} className="mb-3">
             <label htmlFor={field.key} className="form-label">
               <span>{field.label}</span>
-              {field.asterisk && <b className="text-danger mx-2">*</b>}
+              {field.asterisk && <b className="text-danger mx-2" aria-label="Campo obbligatorio">*</b>}
             </label>
             <input type={field.type}
                   id={field.key}
@@ -275,13 +280,14 @@ export function DeliveryComponent() {
                   value={formData[field.key as keyof User] || ''}
                   onInput={handleChange}
                   placeholder={field.placeholder}
+                  aria-label={field.label}
                   className={`form-control ${(submittedOnce || errors[field.key]) ? (errors[field.key] ? 'is-invalid' : 'is-valid') : ''}`}/>
             {(submittedOnce || errors[field.key]) && errors[field.key] &&
-              <div className="invalid-feedback">{errors[field.key]}</div>
+              <div className="invalid-feedback" role="alert">{errors[field.key]}</div>
             }
           </div>
         ))}
-        <button type="submit" className="btn btn-primary">Invia</button>
+        <button type="submit" className="btn btn-primary" aria-label="Invia form">Invia</button>
       </form>
     </div>
   );

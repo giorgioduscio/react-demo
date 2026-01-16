@@ -35,7 +35,7 @@ export const articles :Article[] =[
   {
     id: 2002,
     section: "Primi",
-    label: "Spaghetti al ragù",
+    label: "Maccheroni al ragù",
     price: 7.5,
     description: "Pasta, pomodoro, ragù di maiale, carote",
     imageUrl: "https://www.cuocicuoci.com/wp-content/uploads/2022/05/rigatoni-al-ragu.jpg"
