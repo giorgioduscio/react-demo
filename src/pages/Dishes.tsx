@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { articles } from '../assets/articles';
 import { useCart } from '../contexts/CartContext';
-import type { CartItem } from '../interfaces/datas';
 
 export function Dishes() {
   document.title = 'Piatti'
@@ -67,7 +66,7 @@ function Counter({ articleId }: { articleId: number }) {
   const { add, get } = useCart();
 
   const [quantity, setQuantity] = useState(() => {
-    const cartItem = get(articleId) as CartItem;
+    const cartItem = get(articleId)[0];
     return cartItem ? cartItem.quantity : 0;
   });
   

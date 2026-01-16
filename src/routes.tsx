@@ -30,7 +30,7 @@ const routes = [
       {
         path: '/',
         element: <Navigate to="/dishes" replace />
-      }
+      },
     ],
   },
 ];

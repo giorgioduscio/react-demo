@@ -1,5 +1,5 @@
-import { createContext, useState, useContext, type ReactNode } from 'react';
-import { type Order } from '../interfaces/datas';
+import { createContext, useState, useContext, type ReactNode, useEffect } from 'react';
+import { type Order } from '../interfaces/apis';
 
 const HistoryContext = createContext<{
   get: (order_id?:number)=> Order | Order[] |undefined;
@@ -18,7 +18,25 @@ export function useHistory(){
 };
 
 export function HistoryProvider({ children }:{ children: ReactNode }){
-  const [history, setHistory] = useState<Order[]>([]);
+  // Carica la cronologia dal localStorage all'inizializzazione
+  const [history, setHistory] = useState<Order[]>(() => {
+    try {
+      const savedHistory = localStorage.getItem('local-history');
+      return savedHistory ? JSON.parse(savedHistory) : [];
+    } catch (error) {
+      console.error('Error loading history from localStorage:', error);
+      return [];
+    }
+  });
+
+  // Salva la cronologia nel localStorage ogni volta che cambia
+  useEffect(() => {
+    try {
+      localStorage.setItem('local-history', JSON.stringify(history));
+    } catch (error) {
+      console.error('Error saving history to localStorage:', error);
+    }
+  }, [history]);
 
   const actions ={
     get(order_id?:number){

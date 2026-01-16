@@ -23,4 +23,6 @@ export interface Order{
   date: string;
   items: CartItem[];
   total: number;
+  tableId?: number;
+  method: "table" | "delivery" | "takeAway";
 }

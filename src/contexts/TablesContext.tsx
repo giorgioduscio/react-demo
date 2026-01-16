@@ -1,10 +1,5 @@
 import { createContext, useState, useContext, type ReactNode } from 'react';
-
-interface Table {
-  id: number;
-  key: string;
-  avaiable: boolean;
-}
+import type { Table } from '../interfaces/apis';
 
 const TablesContext = createContext<{
   tables: Table[];

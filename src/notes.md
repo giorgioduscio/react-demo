@@ -5,6 +5,3 @@
 - npx playwright test src/app/tests/list.test.ts
 
 # Applicazione
-- ordinare al tavolo
-- ordinare da asporto
-- ordinare da portare via

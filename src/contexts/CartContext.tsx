@@ -1,8 +1,8 @@
 import { createContext, useState, useContext, type ReactNode } from 'react';
-import { type CartItem } from '../interfaces/datas';
+import { type CartItem } from '../interfaces/apis';
 
 const CartContext = createContext<{
-  get: (article_id?:number)=> CartItem | CartItem[] |undefined;
+  get: (article_id?:number)=> CartItem[];
   add: (articleId: number, quantity: number) => void;
   remove: (itemId: number) => void;
   update: (itemId: number, newQuantity: number) => void;
@@ -26,7 +26,7 @@ export function CartProvider({ children }:{ children: ReactNode }){
     get(article_id?:number){
       if(article_id===undefined) return cart;
 
-      const articleMatch =cart.find(a=> a.articleId===article_id);
+      const articleMatch =cart.filter(a=> a.articleId===article_id);
       return articleMatch 
     },
     add(articleId: number, quantity: number){

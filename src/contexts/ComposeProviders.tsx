@@ -1,8 +1,8 @@
 import { type JSX, type ReactNode } from 'react';
-import { ThemeProvider } from './ThemeContext';
 import { TablesProvider } from './TablesContext';
 import { CartProvider } from './CartContext';
 import { HistoryProvider } from './HistoryContext';
+import { AuthProvider } from './AuthContext';
 
 type Provider = ({ children }: { children: ReactNode }) => JSX.Element;
 
@@ -11,7 +11,7 @@ interface ComposeProvidersProps {
   children: ReactNode;
 }
 
-const providers = [ThemeProvider, TablesProvider, CartProvider, HistoryProvider];
+const providers = [TablesProvider, CartProvider, HistoryProvider, AuthProvider];
 function ComposeProviders({ providers, children }: ComposeProvidersProps) {
   return (
     <>

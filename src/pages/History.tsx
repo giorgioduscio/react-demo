@@ -1,9 +1,9 @@
 import React from 'react';
 import { useHistory } from '../contexts/HistoryContext';
 import { articles } from '../assets/articles';
-import type { CartItem } from '../interfaces/datas';
-import type { Article } from '../interfaces/datas';
-import type { Order } from '../interfaces/datas';
+import type { CartItem } from '../interfaces/apis';
+import type { Article } from '../interfaces/apis';
+import type { Order } from '../interfaces/apis';
 
 export function History() {
   document.title ='Storico'

@@ -9,7 +9,7 @@ export function Navigation() {
 
   const location = useLocation();
   function selectedClass(path:string){
-    return location.pathname===path ?'btn-primary':'btn-outline-secondary'
+    return location.pathname===path ?'btn-primary':'btn-outline-light'
   }
 
   return (

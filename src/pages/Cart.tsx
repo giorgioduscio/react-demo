@@ -3,8 +3,8 @@ import { useCart } from '../contexts/CartContext';
 import { useHistory } from '../contexts/HistoryContext';
 import { articles } from '../assets/articles';
 import { toast } from "../tools/feedbacksUI";
-import type { CartItem } from '../interfaces/datas';
-import type { Article } from '../interfaces/datas';
+import type { CartItem, Order } from '../interfaces/apis';
+import type { Article } from '../interfaces/apis';
 import { useNavigate } from 'react-router-dom';
 
 export function Cart() {
@@ -12,13 +12,29 @@ export function Cart() {
   const navigate = useNavigate();
   const cartContext = useCart();
   const historyContext = useHistory();
-  const [cartItems, setCartItems] = React.useState<CartItem[]>(() => cartContext.get() as CartItem[]);  
+  const [cartItems, setCartItems] = React.useState<CartItem[]>(() => cartContext.get() as CartItem[]); 
+  const orderButtons =[
+    { label: "Ordinare al tavolo", 
+      color: "primary",
+      icon: "bi-table", 
+      clickEvent: () => doPayment('/payment?method=table')
+    },
+    { label: "Ordinare da asporto", 
+      color: "secondary",
+      icon: "bi-truck", 
+      clickEvent: () => doPayment('/payment?method=delivery')
+    },
+    { label: "Ordinare da portare via", 
+      color: "success",
+      icon: "bi-bag", 
+      clickEvent: () => doPayment('/payment?method=takeAway')
+    }
+  ] 
 
   // Aggiorna lo stato locale quando il carrello cambia
   React.useEffect(() => {
     setCartItems(cartContext.get() as CartItem[]);
   }, [cartContext.get]);
-
 
 
   // Ritorna un array di oggetti che uniscono l'item del carrello con il rispettivo articolo
@@ -56,30 +72,37 @@ export function Cart() {
     setCartItems(cartContext.get() as CartItem[]);
   };
 
-  function doPayment(){
-    // Crea un nuovo ordine con gli articoli del carrello
-    const newOrder = {
-      id: 0, // L'ID verrà assegnato automaticamente dal context
-      date: new Date().toISOString(),
-      items: [...cartItems],
-      total: calculateTotal()
-    };
-    cartContext.number_set(`${Math.floor(Math.random() *100)}`)
+  function doPayment(path:string){
+    // se takeAway, mostra soltanto il numero del turno
+    if(path.includes("takeAway")){
+      // Crea un nuovo ordine con gli articoli del carrello
+      const newOrder :Order = {
+        id: 0, // L'ID verrà assegnato automaticamente dal context
+        date: new Date().toISOString(),
+        items: [...cartItems],
+        total: calculateTotal(),
+        method: "takeAway"
+      };
+      cartContext.number_set(`${Math.floor(Math.random() *100)}`)
 
-    // Aggiungi l'ordine allo storico
-    historyContext.add(newOrder);
-    
-    // Svuota il carrello
-    cartContext.clear();
-    
-    // Aggiorna lo stato locale
-    setCartItems([]);
-    
-    // Mostra un messaggio di successo
-    toast("Ordine effettuato!", "success");
-    
-    // Naviga alla pagina di pagamento
-    navigate('/payment?method=takeAway')
+      // Aggiungi l'ordine allo storico
+      historyContext.add(newOrder);
+      
+      // Svuota il carrello
+      cartContext.clear();
+      
+      // Aggiorna lo stato locale
+      setCartItems([]);
+      
+      // Mostra un messaggio di successo
+      toast("Ordine effettuato!", "success");
+      // Naviga alla pagina di pagamento
+      navigate(path)
+      
+    // se delivery o table, va alla pagina di pagamento
+    }else{
+      navigate(path)
+    }
   }
 
   return (
@@ -148,16 +171,15 @@ export function Cart() {
               </React.Fragment>)}
             </div>
 
+            {/* PULSANTI ORDINAZIONE */}
             <div data-btn-wrapper className='py-2 d-grid gap-2'>
-              {/* <button className="btn btn-primary" 
-                      onClick={() => navigate('/payment?method=table')}
-                      >Ordinare al tavolo</button>
-              <button className="btn btn-primary" 
-                      onClick={() => navigate('/payment?method=takeaway')}
-                      >Ordinare da asporto</button> */}
-              <button className="btn btn-primary" 
-                      onClick={doPayment}
-                      >Ordinare da portare via</button>
+              {orderButtons.map((button, i) => 
+                <button key={i} className={"btn btn-"+button.color} 
+                        onClick={button.clickEvent}>
+                  <i className={button.icon +' bi fs-5 mx-2'}></i> 
+                  {button.label}
+                </button>
+              )}
             </div>
           </main>
         }
