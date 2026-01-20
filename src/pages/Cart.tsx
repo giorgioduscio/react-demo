@@ -106,8 +106,8 @@ export function Cart() {
   }
 
   return (
-    <article id="Cart" className="container p-0" lang="it" role="article">
-      <header className="p-3 mb-3 text-bg-c3 shadow" role="banner">
+    <article id="Cart" className="container p-0 max-w-400px" lang="it" role="article">
+      <header className="p-3 mb-3 text-bg-primary shadow" role="banner">
         <h1 className="m-0">Carrello</h1>
       </header>
 

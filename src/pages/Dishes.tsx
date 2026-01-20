@@ -18,35 +18,39 @@ export function Dishes() {
   }
 
   return(
-    <article id="Dishes" className="container p-0" lang="it" role="article">
-      <header className="p-3 mb-3 text-bg-c3 shadow" role="banner">
+    <article id="Dishes" className="container p-0 max-w-400px" lang="it" role="article">
+      <header className="p-3 mb-3 text-bg-primary shadow" role="banner">
         <h1 className="m-0">Menu Ristorante</h1>
       </header>
 
-      <main className="p-2" role="main">
-        <h2>Il Nostro Menu</h2>
-        <p>Scopri tutte le nostre prelibatezze organizzate per categoria</p>
+      <main role="main">
+        <div className="m-3">
+          <h2>Il Nostro Menu</h2>
+          <p>Scopri tutte le nostre prelibatezze organizzate per categoria</p>
+        </div>
         
         {/* Menu sections */}
         <div className="d-flex flex-wrap gap-2" role="list">
           {getArticles().map((article, i, _articles) => (
             <React.Fragment key={i}>
               {/* Mostra l'intestazione se è il primo articolo della categoria o se la categoria cambia */}
-              {i === 0 || article.section !== _articles[i - 1].section ? (
-                <h3 className='mt-3 p-3 w-100 text-bg-c2 rounded' 
+              {(i === 0 || article.section !== _articles[i - 1].section) && 
+                <h3 className='mt-3 p-3 w-100 text-bg-c2 sticky-top z-1 shadow' 
                     id={`section-${article.section}`}>
                   {article.section}
                 </h3>
-              ) : null}
+              }
 
-              <div className="border rounded flex-auto max-w-300px text-bg-c1 position-relative" role="listitem" aria-labelledby={`article-${article.id}`}>
+              <div className="mx-2 border rounded flex-auto text-bg-c1 position-relative" 
+                   role="listitem" aria-labelledby={`article-${article.id}`}>
                 <h4 className='p-3 m-0 d-flex gap-2' id={`article-${article.id}`}>
                   <span>{article.price}€</span>
                   <span>{article.label}</span>
                 </h4>
 
                 <figure className='m-0'>
-                  <img src={article.imageUrl} alt={`Immagine di ${article.label}`} className='w-100 max-h-200px'/>
+                  <img src={article.imageUrl} alt={`Immagine di ${article.label}`} 
+                       className='img-fluid object-fit-cover max-h-200px w-100'/>
                 </figure>
 
                 <div className='p-3'>

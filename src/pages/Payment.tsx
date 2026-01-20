@@ -25,8 +25,8 @@ export function Payment() {
   }
 
   return (
-    <article id="Payment" className="container p-0" lang="it" role="article">
-      <header className="p-3 mb-3 text-bg-c3 shadow d-flex justify-content-between" role="banner">
+    <article id="Payment" className="container p-0 max-w-400px" lang="it" role="article">
+      <header className="p-3 mb-3 text-bg-primary shadow d-flex justify-content-between" role="banner">
         <h1 className="m-0">Pagamento</h1>
         <button className="btn"
                 onClick={()=> to('/dishes')}
@@ -48,20 +48,7 @@ export function Payment() {
               Attenzione: custodisci questo numero fino alla consegna dell'ordine
             </div>
 
-            <div className="d-flex gap-2" role="group" aria-label="Opzioni di ordinazione">
-              <button className="btn btn-primary d-grid cols-auto-1fr align-items-center"
-                      onClick={()=> to('/dishes')}
-                      aria-label="Ordina di nuovo">
-                <i className="bi bi-fork-knife" aria-hidden="true"></i> 
-                <span>Ordina di nuovo</span>
-              </button>
-              <button className="btn btn-outline-primary d-grid cols-auto-1fr align-items-center"
-                      onClick={()=> to('/history')}
-                      aria-label="Mostra storico">
-                <i className="bi bi-clock-history" aria-hidden="true"></i> 
-                <span>Mostra storico</span>
-              </button>
-            </div>
+            <CallToAction />
           </section>
         : method=='table' ?
           <TableComponent />
@@ -97,6 +84,7 @@ export function TableComponent() {
   }
 
   async function handleClick(id: number) {
+    if(!await agree(`Selezionare il "Tavolo ${id}"?`, "Seleziona", "success")) return;
     // Se si clicca sul tavolo già selezionato, si deseleziona
     if(selectedTable?.id) {
       return agree("Non è possibile deselezionare un tavolo", "Capito")
@@ -146,23 +134,37 @@ export function TableComponent() {
     <main className="p-2" role="main">
       {selectedTable ?
         <div className="alert alert-success text-center" role="alert">
-          è stato selezionato il <b className="text-dark">tavolo {selectedTable?.id}</b>
-          <div className="text-dark">Il tuo ordine stato trasmesso</div>
-        </div>
-      :''}
+          <h3>Ordine confermato!</h3>
+          <p className="mb-3">
+            Il <b className="text-dark">tavolo {selectedTable?.id}</b> è stato assegnato con successo.
+          </p>
+          <div className="text-dark">
+            <p>Il tuo ordine è stato trasmesso alla cucina.</p>
+            <p>Un cameriere ti raggiungerà presto al tavolo selezionato.</p>
+          </div>
 
-      <h3>Tavoli disponibili</h3>
-      <p>Seleziona un tavolo</p>
-      <div className="d-grid cols-1fr-1fr-1fr gap-2" role="grid" aria-label="Tavoli disponibili">
-        {getTables() .map((table) => (
-          <button key={table.id}
-                  className={`text-truncate btn ${table.btnClass}`}
-                  onClick={() => handleClick(table.id)}
-                  aria-label={`Seleziona tavolo ${table.id}`}>
-            <small>Tav.</small> {table.id}
-          </button>
-        ))}
-      </div>
+          <CallToAction/>
+        </div>
+
+      // NESSUN TAVOLO SELEZIONATO
+      :<>
+        <h3>Scegli il tuo tavolo</h3>
+        <p className="text-muted mb-4">
+          Seleziona il tavolo dove desideri consumare il tuo pasto.
+          I tavoli disponibili sono evidenziati in blu.
+        </p>
+        <div className="d-grid cols-1fr-1fr-1fr gap-2" role="grid" aria-label="Tavoli disponibili">
+          {getTables() .map((table) => (
+            <button key={table.id}
+                    className={`text-truncate btn ${table.btnClass}`}
+                    onClick={() => handleClick(table.id)}
+                    aria-label={`Seleziona tavolo ${table.id}`}>
+              <small>Tav.</small> {table.id}
+            </button>
+          ))}
+        </div>
+      </>}
+
     </main>
   </article>
 }
@@ -252,7 +254,7 @@ export function DeliveryComponent() {
 
   if (submitted) {
     return (
-      <div className="text-bg-c3 p-4 rounded" role="alert">
+      <div className="alert alert-success text-center" role="alert">
         <h2>Successo!</h2>
         <div>Il tuo ordine è stato preso in carico.</div>
         <div>Verrà spedito a <b>{formData.username}</b></div>
@@ -260,6 +262,8 @@ export function DeliveryComponent() {
           <b className='mx-1'>{formData.city}</b>,
           <b className='mx-1'>{formData.country}</b>
         </div>
+
+        <CallToAction/>
       </div>
     );
   }
@@ -291,4 +295,39 @@ export function DeliveryComponent() {
       </form>
     </div>
   );
+}
+
+function CallToAction() {
+  const navigate = useNavigate()
+  async function to(path: string) {
+    if (!await agree('Uscire dalla pagina?', 'Esci', 'danger')) return;
+    navigate(path);
+  }
+
+  const buttons = [
+    { label: "Ordina di nuovo", 
+      handleclick: () => to('/dishes'), 
+      icon: "bi-fork-knife", 
+      btnClass: "btn-primary" 
+    },
+    { label: "Mostra storico", 
+      handleclick: () => to('/history'), 
+      icon: "bi-clock-history", 
+      btnClass: "btn-outline-primary" 
+    }
+  ];
+
+  return <>
+    <div className="d-flex justify-content-center gap-2 mt-2" role="group" aria-label="Opzioni di ordinazione">
+      {buttons.map((button, index) => (
+        <button key={index}
+                className={`btn ${button.btnClass} d-grid cols-auto-1fr align-items-center`}
+                onClick={button.handleclick}
+                aria-label={button.label}>
+          <i className={`bi ${button.icon} me-2`} aria-hidden="true"></i>
+          <span>{button.label}</span>
+        </button>
+      ))}
+    </div>
+  </>
 }
