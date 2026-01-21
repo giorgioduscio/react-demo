@@ -1,0 +1,380 @@
+import { useEffect, useState } from 'react';
+import { useTables } from '../contexts/TablesContext';
+import { agree, toast } from "../tools/feedbacksUI";
+import { useCart } from '../contexts/CartContext';
+import { useHistory } from '../contexts/HistoryContext';
+import { useNavigate } from 'react-router-dom';
+import { formInit as authFormInit, useAuth } from '../contexts/AuthContext';
+import type { User } from '../interfaces/structures';
+
+export function Result() {
+  document.title='Pagamento';
+  const navigate =useNavigate();
+  const [method, setMethod] = useState('');
+  const CartContext =useCart();
+  const HistoryContext =useHistory();
+  const AuthContext =useAuth();
+
+  useEffect(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    setMethod(searchParams.get('method') || '');
+  }, [navigate, window.location.search]);
+
+  useEffect(() => {
+    if(CartContext.get().length && method=="takeAway") takeAwaySubmit();   
+  }, [method]);
+
+  setTimeout(() => {
+    if(!AuthContext.card) {
+      navigate("/dishes");
+      console.error("nessuna carta inserita", AuthContext.card);
+    }
+  }, 1000);
+
+  async function to(path:string) {
+    if(!await agree('Uscire dalla pagina?', 'Esci', 'danger')) return;
+    navigate(path);
+  }
+
+  // aggiunge il carrello allo storico
+  function takeAwaySubmit() {
+    const cartItems = CartContext.get();
+    if(cartItems.length === 0) {
+      return toast('Il carrello è vuoto. Aggiungi articoli prima di procedere.');
+    }
+    
+    // Calcola il totale basato sulla quantità degli articoli
+    const calculateTotal = (cartItems: any[]) => {
+      return cartItems.reduce((total, item) => total + (item.quantity || 0), 0);
+    };
+    
+    // Aggiungi l'ordine allo storico
+    HistoryContext.add({
+      id: Math.floor(Math.random() *1000000),
+      date: new Date().toISOString(),
+      items: cartItems,
+      total: calculateTotal(cartItems),
+      method: "takeAway"
+    });
+    
+    // Svuota il carrello
+    CartContext.clear();
+    toast('Ordine aggiunto allo storico', "success");
+  }
+
+  return (
+    <article id="Payment" className="container p-0 max-w-400px" lang="it" role="article">
+      <header className="p-3 mb-3 text-bg-primary shadow d-flex justify-content-between" role="banner">
+        <h1 className="m-0">Pagamento</h1>
+        <button className="btn"
+                onClick={()=> to('/dishes')}
+                aria-label="Chiudi pagina di pagamento">
+          <b className="bi bi-x-lg" aria-hidden="true"></b>
+        </button>
+      </header>
+
+      <main className="p-2" role="main">
+        {(method=='takeAway')?
+          <TakeawayComponent />
+
+        : method=='table' ?
+          <TableComponent />
+
+        : method=='delivery' ?
+          <DeliveryComponent />
+        : null}
+      </main>
+    </article>
+  );
+}
+
+function TakeawayComponent() {
+  const CartContext =useCart();
+  return<>
+    <section id='takeAway'>
+
+      <div className='h1 text-center my-4' aria-label="Numero ordine">
+        Numero ordine:
+        <div style={{fontSize:'80px'}} aria-live="polite">{CartContext.number_get()}</div>
+      </div>
+
+      <div className="alert alert-warning" role="alert">
+        Attenzione: custodisci questo numero fino alla consegna dell'ordine
+      </div>
+      <CallToAction />
+    </section>
+  </>
+}
+
+function TableComponent() {
+  const TableContext = useTables();
+  const CartContext = useCart();
+  const HistoryContext = useHistory();
+  const navigate =useNavigate();
+
+  function getTables() {
+    return TableContext.tables 
+      .filter(table=> table.avaiable || table.id ==TableContext.selectedTable?.id)
+      .map(table => ({
+        ...table,
+        btnClass: table.id ==TableContext.selectedTable?.id ? 'btn-success'
+                 : table.avaiable ? 'btn-primary'
+                 : 'btn-secondary'
+      }));
+  }
+
+  function calculateTotal(cartItems: any[]) {
+    // Calcola il totale basato sulla quantità degli articoli
+    // Nota: per un calcolo preciso, sarebbe necessario avere accesso ai prezzi degli articoli
+    return cartItems.reduce((total, item) => total + (item.quantity || 0), 0);
+  }
+
+  async function handleClick(id: number) {    
+    if(!await agree(`Selezionare il "Tavolo ${id}"?`, "Seleziona", "success")) return;
+    // Se si clicca sul tavolo già selezionato, si deseleziona
+    if(TableContext.selectedTable?.id) {
+      return toast("Non è possibile deselezionare un tavolo", "danger")
+    }
+
+    // trova il tavolo nella lista
+    const tableMatch =TableContext.tables.find(t=> t.id==id);
+    if(!tableMatch) 
+      return console.error('non trovato', tableMatch);
+    
+    // Ottieni gli articoli dal carrello
+    const cartItems = CartContext.get();
+    
+    if(cartItems.length === 0) {
+      navigate("/dishes");
+      return toast('Il carrello è vuoto. Aggiungi articoli prima di selezionare un tavolo.');
+    }
+    
+    // Aggiungi l'ordine allo storico
+    HistoryContext.add({
+      id,
+      date: new Date().toISOString(),
+      items: cartItems,
+      total: calculateTotal(cartItems),
+      tableId: id,
+      method: "table"
+    });
+    
+    // Svuota il carrello
+    CartContext.clear();
+    
+    // seleziona e rende non disponibile il tavolo selezionato
+    TableContext.setSelectedTable(tableMatch);
+    TableContext.setTables(TableContext.tables.map(table => {
+      // Il nuovo tavolo selezionato diventa non disponibile
+      if(table.id === id) return { ...table, avaiable: false };
+      // Il tavolo precedente diventa disponibile
+      else if(TableContext.selectedTable && table.id === TableContext.selectedTable.id) 
+              return { ...table, avaiable: true };
+      
+      return table;
+    }));
+    
+    toast('Ordine assegnato al tavolo ' + id);
+  }
+  
+  return <article id="TableComponent" className="p-0" role="article">
+    <main className="p-2" role="main">
+      {TableContext.selectedTable ?
+        <div className="alert alert-success text-center" role="alert">
+          <h3>Ordine confermato!</h3>
+          <p className="mb-3">
+            Il <b className="text-dark">tavolo {TableContext.selectedTable?.id}</b> è stato assegnato con successo.
+          </p>
+          <div className="text-dark">
+            <p>Il tuo ordine è stato trasmesso alla cucina.</p>
+            <p>Un cameriere ti raggiungerà presto al tavolo selezionato.</p>
+          </div>
+
+          <CallToAction/>
+        </div>
+
+      // NESSUN TAVOLO SELEZIONATO
+      :<>
+        <h3>Scegli il tuo tavolo</h3>
+        <p className="text-light mb-4">
+          Seleziona il tavolo dove desideri consumare il tuo pasto.
+          I tavoli disponibili sono evidenziati in blu.
+        </p>
+        <div className="d-grid cols-1fr-1fr-1fr gap-2" role="grid" aria-label="Tavoli disponibili">
+          {getTables() .map((table) => (
+            <button key={table.id}
+                    className={`text-truncate btn ${table.btnClass}`}
+                    onClick={() => handleClick(table.id)}
+                    aria-label={`Seleziona tavolo ${table.id}`}>
+              <small>Tav.</small> {table.id}
+            </button>
+          ))}
+        </div>
+      </>}
+
+    </main>
+  </article>
+}
+
+function DeliveryComponent() {
+  const formFields = authFormInit();
+  const [formData, setFormData] = useState<Partial<User>>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitted, setSubmitted] = useState(false);
+  const [submittedOnce, setSubmittedOnce] = useState(false);
+  const CartContext = useCart();
+  const HistoryContext = useHistory();
+
+  useEffect(() => {
+    const initialFormData = formFields.reduce((acc, field) => {
+      (acc as any)[field.key] = field.value as string;
+      return acc;
+    }, {} as Partial<User>);
+    setFormData(initialFormData);
+  }, []);
+
+  function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const { name, value } = e.target;
+    setFormData(prev => ({ ...prev, [name]: value }));
+    
+    // Valida il campo corrente solo se il form è stato già inviato
+    if (submittedOnce) {
+      const field = formFields.find(f => f.key === name);
+      if (field) {
+        const newErrors = { ...errors };
+        if (field.validation && !field.validation(value)) {
+          newErrors[name] = field.errorMessage || 'Field is invalid';
+        } else if (field.asterisk && !value) {
+          newErrors[name] = field.errorMessage || 'Field is required';
+        } else {
+          delete newErrors[name]; // Rimuovi l'errore se il campo è valido
+        }
+        setErrors(newErrors);
+      }
+    }
+  }
+
+  function form_isValid(): boolean {
+    const newErrors: Record<string, string> = {};
+    formFields.forEach(field => {
+      const value = formData[field.key as keyof User];
+      if (field.validation && !field.validation(value)) {
+        newErrors[field.key] = field.errorMessage || 'Field is invalid';
+      } else if (field.asterisk && !value) {
+        newErrors[field.key] = field.errorMessage || 'Field is required';
+      }
+    });
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  }
+
+  function calculateTotal(cartItems: any[]) {
+    return cartItems.reduce((total, item) => total + (item.quantity || 0), 0);
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSubmittedOnce(true);
+    if (form_isValid()) {
+      // Ottieni gli articoli dal carrello
+      const cartItems = CartContext.get();
+      
+      // Aggiungi l'ordine allo storico
+      HistoryContext.add({
+        id: Math.floor(Math.random() * 1000000),
+        date: new Date().toISOString(),
+        items: cartItems,
+        total: calculateTotal(cartItems),
+        method: "delivery",
+        // address: formData.address,
+        // city: formData.city,
+        // country: formData.country
+      });
+      
+      // Svuota il carrello
+      CartContext.clear();
+      
+      setSubmitted(true);
+      toast("Ordine effettuato", "success")
+    }
+  }
+
+  if (submitted) {
+    return (
+      <div className="alert alert-success text-center" role="alert">
+        <h2>Successo!</h2>
+        <div>Il tuo ordine è stato preso in carico.</div>
+        <div>Verrà spedito a <b>{formData.username}</b></div>
+        <div>all'indirizzo: <b>{formData.address}</b> di
+          <b className='mx-1'>{formData.city}</b>,
+          <b className='mx-1'>{formData.country}</b>
+        </div>
+
+        <CallToAction/>
+      </div>
+    );
+  }
+
+  return (
+    <div className="text-bg-c1 p-4 rounded">
+      <h2>Inserisci i dati di consegna</h2>
+      <form onSubmit={handleSubmit} aria-label="Form di consegna">
+        {formFields.map(field => (
+          <div key={field.key} className="mb-3">
+            <label htmlFor={field.key} className="form-label">
+              <span>{field.label}</span>
+              {field.asterisk && <b className="text-danger mx-2" aria-label="Campo obbligatorio">*</b>}
+            </label>
+            <input type={field.type}
+                  id={field.key}
+                  name={field.key}
+                  value={(formData as any)[field.key as keyof User] || ''}
+                  onInput={handleChange}
+                  placeholder={field.placeholder}
+                  aria-label={field.label}
+                  className={`form-control ${(submittedOnce || errors[field.key]) ? (errors[field.key] ? 'is-invalid' : 'is-valid') : ''}`}/>
+            {(submittedOnce || errors[field.key]) && errors[field.key] &&
+              <div className="invalid-feedback" role="alert">{errors[field.key]}</div>
+            }
+          </div>
+        ))}
+        <button type="submit" className="btn btn-primary" aria-label="Invia form">Invia</button>
+      </form>
+    </div>
+  );
+}
+
+function CallToAction() {
+  const navigate = useNavigate()
+  async function to(path: string) {
+    if (!await agree('Uscire dalla pagina?', 'Esci', 'danger')) return;
+    navigate(path);
+  }
+
+  const buttons = [
+    { label: "Ordina di nuovo", 
+      handleclick: () => to('/dishes'), 
+      icon: "bi-fork-knife", 
+      btnClass: "btn-primary" 
+    },
+    { label: "Mostra storico", 
+      handleclick: () => to('/history'), 
+      icon: "bi-clock-history", 
+      btnClass: "btn-outline-primary" 
+    }
+  ];
+
+  return <>
+    <div className="d-flex justify-content-center gap-2 mt-2" role="group" aria-label="Opzioni di ordinazione">
+      {buttons.map((button, index) => (
+        <button key={index}
+                className={`btn ${button.btnClass} d-grid cols-auto-1fr align-items-center`}
+                onClick={button.handleclick}
+                aria-label={button.label}>
+          <i className={`bi ${button.icon} me-2`} aria-hidden="true"></i>
+          <span>{button.label}</span>
+        </button>
+      ))}
+    </div>
+  </>
+}

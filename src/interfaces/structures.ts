@@ -27,4 +27,12 @@ export interface User{
   city:string
   country:string
   address:string
+  creditCard?: CreditCard; // dati della carta di credito
+}
+
+export interface CreditCard {
+  cardNumber: string;
+  cardHolder: string;
+  expiryDate: string;
+  cvv: string;
 }

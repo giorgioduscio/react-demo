@@ -2,7 +2,7 @@ import { createContext, useState, useContext, type ReactNode, useEffect } from '
 import { type Order } from '../interfaces/apis';
 
 const HistoryContext = createContext<{
-  get: (order_id?:number)=> Order | Order[] |undefined;
+  get: (order_id?:number)=> Order[];
   add: (order: Order) => void;
   remove: (orderId: number) => void;
   update: (orderId: number, newOrder: Order) => void;
@@ -42,7 +42,7 @@ export function HistoryProvider({ children }:{ children: ReactNode }){
     get(order_id?:number){
       if(order_id===undefined) return history;
 
-      const orderMatch =history.find(a=> a.id===order_id);
+      const orderMatch =history.filter(a=> a.id===order_id);
       return orderMatch 
     },
     add(order: Order){

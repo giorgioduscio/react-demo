@@ -11,8 +11,8 @@ export function History() {
   const [historyItems, setHistoryItems] = React.useState<Order[]>(() => Hystory.get() as Order[]);
 
   // Ritorna un array di oggetti che uniscono l'item del carrello con il rispettivo articolo
-  function mergeCartArticles(cartParam: CartItem[]): (Article & CartItem)[] {
-    return cartParam.map(item => {
+  function mergeCartArticles(cartParam: CartItem[]): (Article & CartItem)[] {   
+    return [...cartParam].map(item => {
       const articleMatch = articles.find(article => article.id === item.articleId);
       if (!articleMatch) return null;
       return { ...item, ...articleMatch };
@@ -40,8 +40,8 @@ export function History() {
       : /*lenght>0*/
         <main className=''>
           <h3>Storico ordinazioni</h3>
-          <div role="list">
-            {historyItems.reverse().map((order) => (
+          <div role="list" className='d-flex flex-column-reverse'>
+            {historyItems.map((order) => (
               <div key={order.id} className="p-3 my-3 rounded text-bg-c1" role="listitem">
                 <div className="d-flex justify-content-between mb-2">
                   <strong aria-label={`Ordine numero ${order.id}`}>
@@ -52,11 +52,11 @@ export function History() {
 
                 <div className="mb-2">
                   <strong>Totale:</strong> 
-                  <span aria-live="polite">{order.total.toFixed(2)}€</span>
+                  <span aria-live="polite">{order.total ? order.total.toFixed(2) : '0.00'}€</span>
                 </div>
 
                 <div className="d-grid gap-1 cols-auto-1fr-auto" role="list">
-                  {mergeCartArticles(order.items).map((item) => <React.Fragment key={item.id}>
+                  {order.items && Array.isArray(order.items) ? mergeCartArticles(order.items).map((item) => <React.Fragment key={item.id}>
                     <i className="bi bi-dot" aria-hidden="true"></i>
                     <b aria-label={`Articolo: ${item.label}`}>
                       {item.label} {item.quantity>1 ? '×'+item.quantity : ''}
@@ -64,7 +64,7 @@ export function History() {
                     <span aria-label={`Prezzo: ${(item.price * item.quantity).toFixed(2)} euro`}>
                       {(item.price * item.quantity).toFixed(2)}€
                     </span>
-                  </React.Fragment>)}
+                  </React.Fragment>) : <p>Nessun articolo trovato</p>}
                 </div>
               </div>
             ))}

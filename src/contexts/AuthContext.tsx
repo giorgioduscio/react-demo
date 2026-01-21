@@ -1,11 +1,13 @@
 import { createContext, useState, useContext, type ReactNode, useEffect } from 'react';
-import { type FormField, type User } from '../interfaces/structures';
+import { type CreditCard, type FormField, type User } from '../interfaces/structures';
 
 const AuthContext = createContext<{
   get: () => User | null;
   user: User | null;
   setUser: (userData: Partial<User>) => void;
   reset: () => void;
+  card: CreditCard | null;
+  setCard: React.Dispatch<React.SetStateAction<CreditCard | null>>;
 } | undefined>(undefined);
 
 export function useAuth(){
@@ -18,6 +20,7 @@ export function useAuth(){
 
 export function AuthProvider({ children }:{ children: ReactNode }){
   // Carica l'utente dal localStorage all'inizializzazione
+  const [card, setCard] =useState<CreditCard|null>(null)
   const [user, setUserState] = useState<User | null>(() => {
     try {
       const savedUser = localStorage.getItem('local-user');
@@ -61,14 +64,18 @@ export function AuthProvider({ children }:{ children: ReactNode }){
         expiration: userData.expiration || user?.expiration || '',
         city: userData.city || user?.city || '',
         country: userData.country || user?.country || '',
-        address: userData.address || user?.address || ''
+        address: userData.address || user?.address || '',
+        creditCard: userData.creditCard || user?.creditCard || undefined
       };
 
       setUserState(updatedUser);
     },
     reset(){
       setUserState(null);
-    }
+    },
+
+    card,
+    setCard,
   }
 
   return (

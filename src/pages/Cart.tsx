@@ -1,9 +1,7 @@
 import React from 'react';
 import { useCart } from '../contexts/CartContext';
-import { useHistory } from '../contexts/HistoryContext';
 import { articles } from '../assets/articles';
-import { toast } from "../tools/feedbacksUI";
-import type { CartItem, Order } from '../interfaces/apis';
+import type { CartItem } from '../interfaces/apis';
 import type { Article } from '../interfaces/apis';
 import { useNavigate } from 'react-router-dom';
 
@@ -11,7 +9,6 @@ export function Cart() {
   document.title = 'Carrello';
   const navigate = useNavigate();
   const cartContext = useCart();
-  const historyContext = useHistory();
   const [cartItems, setCartItems] = React.useState<CartItem[]>(() => cartContext.get() as CartItem[]); 
   const orderButtons =[
     { label: "Ordinare al tavolo", 
@@ -62,47 +59,29 @@ export function Cart() {
 
   // Gestione della quantità
   function handleQuantityChange(itemId: number, newQuantity: number){
+    const item = cartItems.find(item => item.id === itemId);
+    if (!item) return; // Se l'item non esiste, esci
+    
     if (newQuantity <= 0) {
       cartContext.remove(itemId);
-      toast("Elemento rimosso", "danger")
+      setCartItems(cartContext.get() as CartItem[]);
     } else {
-      cartContext.update(itemId, newQuantity);
-      toast("Elemento modificato", "success")
+      // Mostra il toast solo se la quantità è effettivamente cambiata
+      if (item.quantity !== newQuantity) {
+        cartContext.update(itemId, newQuantity);
+        setCartItems(cartContext.get() as CartItem[]);
+      } else {
+        return; // Esci se la quantità non è cambiata
+      }
     }
-    setCartItems(cartContext.get() as CartItem[]);
   };
 
   function doPayment(path:string){
     // se takeAway, mostra soltanto il numero del turno
-    if(path.includes("takeAway")){
-      // Crea un nuovo ordine con gli articoli del carrello
-      const newOrder :Order = {
-        id: 0, // L'ID verrà assegnato automaticamente dal context
-        date: new Date().toISOString(),
-        items: [...cartItems],
-        total: calculateTotal(),
-        method: "takeAway"
-      };
+    if(path.includes("takeAway"))
       cartContext.number_set(`${Math.floor(Math.random() *100)}`)
-
-      // Aggiungi l'ordine allo storico
-      historyContext.add(newOrder);
-      
-      // Svuota il carrello
-      cartContext.clear();
-      
-      // Aggiorna lo stato locale
-      setCartItems([]);
-      
-      // Mostra un messaggio di successo
-      toast("Ordine effettuato!", "success");
-      // Naviga alla pagina di pagamento
-      navigate(path)
-      
-    // se delivery o table, va alla pagina di pagamento
-    }else{
-      navigate(path)
-    }
+    // navigazione
+    navigate(path)
   }
 
   return (

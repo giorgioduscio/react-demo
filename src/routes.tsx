@@ -4,12 +4,13 @@ import { Cart } from './pages/Cart';
 import { History } from './pages/History';
 import { Dishes } from './pages/Dishes';
 import { Payment } from './pages/Payment';
+import { Result } from './pages/Result';
 
 const routes = [
   {
     path: '/',
     element: <App />,
-    errorElement: <div>Not Found</div>,
+    errorElement: <div className='d-flex justify-content-center align-items-center'>Not Found</div>,
     children: [
       {
         path: '/history',
@@ -26,6 +27,10 @@ const routes = [
       {
         path: '/payment',
         element: <Payment />,
+      },
+      {
+        path: '/result',
+        element: <Result />,
       },
       {
         path: '/',

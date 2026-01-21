@@ -1,205 +1,121 @@
-import { useEffect, useState } from 'react';
-import { useTables } from '../contexts/TablesContext';
+import { useState, useEffect } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 import { agree, toast } from "../tools/feedbacksUI";
 import { useCart } from '../contexts/CartContext';
-import { useHistory } from '../contexts/HistoryContext';
-import { useNavigate } from 'react-router-dom';
-import { formInit as authFormInit } from '../contexts/AuthContext';
-import type { User } from '../interfaces/structures';
+import { useAuth } from '../contexts/AuthContext';
+import { type FormField, type CreditCard } from "../interfaces/structures";
+import type { CartItem } from '../interfaces/apis';
 
-export function Payment() {
-  const navigate =useNavigate();
-  const [method, setMethod] = useState('');
-  const CartContext =useCart()
-
-  useEffect(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    setMethod(searchParams.get('method') || '');
-    
-    //todo se la pagina non ha metodo, mostra il carrello
-  }, [navigate, window.location.search]);
-
-  async function to(path:string) {
-    if(!await agree('Uscire dalla pagina?', 'Esci', 'danger')) return;
-    navigate(path);
-  }
-
-  return (
-    <article id="Payment" className="container p-0 max-w-400px" lang="it" role="article">
-      <header className="p-3 mb-3 text-bg-primary shadow d-flex justify-content-between" role="banner">
-        <h1 className="m-0">Pagamento</h1>
-        <button className="btn"
-                onClick={()=> to('/dishes')}
-                aria-label="Chiudi pagina di pagamento">
-          <b className="bi bi-x-lg" aria-hidden="true"></b>
-        </button>
-      </header>
-
-      <main className="p-2" role="main">
-        {method=='takeAway'?
-          <section id='takeAway'>
-
-            <div className='h1 text-center my-4' aria-label="Numero ordine">
-              Numero ordine:
-              <div style={{fontSize:'80px'}} aria-live="polite">{CartContext.number_get()}</div>
-            </div>
-
-            <div className="alert alert-warning" role="alert">
-              Attenzione: custodisci questo numero fino alla consegna dell'ordine
-            </div>
-
-            <CallToAction />
-          </section>
-        : method=='table' ?
-          <TableComponent />
-        : method=='delivery' ?
-          <DeliveryComponent />
-        : null}
-      </main>
-    </article>
-  );
+function creditCardFormInit(): FormField[] {
+  return [
+    {
+      key: 'cardNumber',
+      type: 'text',
+      label: 'Numero della Carta',
+      value: '1234 5678 9012 3456',
+      placeholder: '1234 5678 9012 3456',
+      asterisk: true,
+      validation: (value: string) => {
+        const cleaned = value.replace(/\s/g, "");
+        return cleaned.length === 16;
+      },
+      errorMessage: 'Il numero della carta deve essere di 16 cifre'
+    },
+    {
+      key: 'cardHolder',
+      type: 'text',
+      label: 'Nome del Titolare',
+      value: 'Mario Rossi',
+      placeholder: 'Mario Rossi',
+      asterisk: true,
+      validation: (value: string) => value.trim().length >= 3,
+      errorMessage: 'Il nome deve contenere almeno 3 caratteri'
+    },
+    {
+      key: 'expiryDate',
+      type: 'text',
+      label: 'Data di Scadenza',
+      value: '12/25',
+      placeholder: 'MM/YY',
+      asterisk: true,
+      validation: (value: string) => /^\d{2}\/\d{2}$/.test(value),
+      errorMessage: 'La data deve essere nel formato MM/YY'
+    },
+    {
+      key: 'cvv',
+      type: 'text',
+      label: 'CVV',
+      value: '123',
+      placeholder: '123',
+      asterisk: true,
+      validation: (value: string) => /^\d{3,4}$/.test(value),
+      errorMessage: 'Il CVV deve essere di 3 o 4 cifre'
+    }
+  ];
 }
 
-
-export function TableComponent() {
-  const { tables, setTables, selectedTable, setSelectedTable } = useTables();
-  const CartContext = useCart();
-  const HistoryContext = useHistory();
-
-  function getTables() {
-    return tables 
-      .filter(table=> table.avaiable || table.id ==selectedTable?.id)
-      .map(table => ({
-        ...table,
-        btnClass: table.id ==selectedTable?.id ? 'btn-success'
-                 : table.avaiable ? 'btn-primary'
-                 : 'btn-secondary'
-      }));
-  }
-
-  function calculateTotal(cartItems: any[]) {
-    // Calcola il totale basato sulla quantità degli articoli
-    // Nota: per un calcolo preciso, sarebbe necessario avere accesso ai prezzi degli articoli
-    return cartItems.reduce((total, item) => total + (item.quantity || 0), 0);
-  }
-
-  async function handleClick(id: number) {
-    if(!await agree(`Selezionare il "Tavolo ${id}"?`, "Seleziona", "success")) return;
-    // Se si clicca sul tavolo già selezionato, si deseleziona
-    if(selectedTable?.id) {
-      return agree("Non è possibile deselezionare un tavolo", "Capito")
-    }
-
-    // trova il tavolo nella lista
-    const tableMatch =tables.find(t=> t.id==id);
-    if(!tableMatch) 
-      return console.error('non trovato', tableMatch);
-    
-    // Ottieni gli articoli dal carrello
-    const cartItems = CartContext.get();
-    
-    if(cartItems.length === 0) {
-      return toast('Il carrello è vuoto. Aggiungi articoli prima di selezionare un tavolo.');
-    }
-    
-    // Aggiungi l'ordine allo storico
-    HistoryContext.add({
-      id,
-      date: new Date().toISOString(),
-      items: cartItems,
-      total: calculateTotal(cartItems),
-      tableId: id,
-      method: "table"
-    });
-    
-    // Svuota il carrello
-    CartContext.clear();
-    
-    // seleziona e rende non disponibile il tavolo selezionato
-    setSelectedTable(tableMatch);
-    setTables(tables.map(table => {
-      // Il nuovo tavolo selezionato diventa non disponibile
-      if(table.id === id) return { ...table, avaiable: false };
-      // Il tavolo precedente diventa disponibile
-      else if(selectedTable && table.id === selectedTable.id) 
-              return { ...table, avaiable: true };
-      
-      return table;
-    }));
-    
-    toast('Ordine assegnato al tavolo ' + id);
-  }
-  
-  return <article id="TableComponent" className="p-0" role="article">
-    <main className="p-2" role="main">
-      {selectedTable ?
-        <div className="alert alert-success text-center" role="alert">
-          <h3>Ordine confermato!</h3>
-          <p className="mb-3">
-            Il <b className="text-dark">tavolo {selectedTable?.id}</b> è stato assegnato con successo.
-          </p>
-          <div className="text-dark">
-            <p>Il tuo ordine è stato trasmesso alla cucina.</p>
-            <p>Un cameriere ti raggiungerà presto al tavolo selezionato.</p>
-          </div>
-
-          <CallToAction/>
-        </div>
-
-      // NESSUN TAVOLO SELEZIONATO
-      :<>
-        <h3>Scegli il tuo tavolo</h3>
-        <p className="text-muted mb-4">
-          Seleziona il tavolo dove desideri consumare il tuo pasto.
-          I tavoli disponibili sono evidenziati in blu.
-        </p>
-        <div className="d-grid cols-1fr-1fr-1fr gap-2" role="grid" aria-label="Tavoli disponibili">
-          {getTables() .map((table) => (
-            <button key={table.id}
-                    className={`text-truncate btn ${table.btnClass}`}
-                    onClick={() => handleClick(table.id)}
-                    aria-label={`Seleziona tavolo ${table.id}`}>
-              <small>Tav.</small> {table.id}
-            </button>
-          ))}
-        </div>
-      </>}
-
-    </main>
-  </article>
-}
-
-
-export function DeliveryComponent() {
-  const formFields = authFormInit();
-  const [formData, setFormData] = useState<Partial<User>>({});
+export function Payment(){
+  const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const method = searchParams.get('method') || 'table'; // Default to table if not specified
+  const cartContext = useCart();
+  const authContext = useAuth();
+  const [cartItems, setCartItems] = useState<CartItem[]>(() => cartContext.get() as CartItem[]);
+  const formFields = creditCardFormInit();
+  const [formData, setFormData] = useState<CreditCard>({
+    cardNumber: '',
+    cardHolder: '',
+    expiryDate: '',
+    cvv: ''
+  });
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [submitted, setSubmitted] = useState(false);
   const [submittedOnce, setSubmittedOnce] = useState(false);
-  const CartContext = useCart();
-  const HistoryContext = useHistory();
 
+  // Inizializza gli articoli del carrello
   useEffect(() => {
-    const initialFormData = formFields.reduce((acc, field) => {
-      (acc as any)[field.key] = field.value as string;
-      return acc;
-    }, {} as Partial<User>);
+    setCartItems(cartContext.get() as CartItem[]);
+    cartItems
+    
+    const initialFormData: CreditCard = formFields.reduce((acc, field) => {
+      return {
+        ...acc,
+        [field.key]: field.value as string
+      };
+    }, {
+      cardNumber: '',
+      cardHolder: '',
+      expiryDate: '',
+      cvv: ''
+    } as CreditCard);
     setFormData(initialFormData);
-  }, []);
+  }, []); // Array vuoto per eseguire solo una volta all'inizio
 
   function handleChange(e: React.ChangeEvent<HTMLInputElement>) {
-    const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    const { name, value } = e.target;    
     
+    // Applica la formattazione specifica per alcuni campi
+    let formattedValue = value;
+    if (name === 'cardNumber') {
+      formattedValue = formatCardNumber(value);
+    } else if (name === 'expiryDate') {
+      formattedValue = formatExpiryDate(value);
+    } else if (name === 'cvv') {
+      formattedValue = value.replace(/\D/g, "");
+    }
+    
+    setFormData(prev => ({ ...prev, [name]: formattedValue }));
+
     // Valida il campo corrente solo se il form è stato già inviato
     if (submittedOnce) {
-      const field = formFields.find(f => f.key === name);
+      const field = formFields.find(function(f) {
+        return f.key === name;
+      });
       if (field) {
         const newErrors = { ...errors };
-        if (field.validation && !field.validation(value)) {
-          newErrors[name] = field.errorMessage || 'Field is invalid';
-        } else if (field.asterisk && !value) {
-          newErrors[name] = field.errorMessage || 'Field is required';
+        if (field.validation && !field.validation(formattedValue)) {
+          newErrors[name] = field.errorMessage || 'Campo non valido';
+        } else if (field.asterisk && !formattedValue) {
+          newErrors[name] = field.errorMessage || 'Campo obbligatorio';
         } else {
           delete newErrors[name]; // Rimuovi l'errore se il campo è valido
         }
@@ -208,126 +124,125 @@ export function DeliveryComponent() {
     }
   }
 
-  function form_isValid(): boolean {
+  async function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    setSubmittedOnce(true);    
+
+    // Valida tutti i campi
     const newErrors: Record<string, string> = {};
-    formFields.forEach(field => {
-      const value = formData[field.key as keyof User];
+    let isValid = true;
+
+    formFields.forEach(function(field) {
+      const value = formData[field.key as keyof CreditCard];
       if (field.validation && !field.validation(value)) {
-        newErrors[field.key] = field.errorMessage || 'Field is invalid';
+        newErrors[field.key] = field.errorMessage || 'Campo non valido';
+        isValid = false;
       } else if (field.asterisk && !value) {
-        newErrors[field.key] = field.errorMessage || 'Field is required';
+        newErrors[field.key] = field.errorMessage || 'Campo obbligatorio';
+        isValid = false;
       }
     });
+
     setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  }
 
-  function calculateTotal(cartItems: any[]) {
-    return cartItems.reduce((total, item) => total + (item.quantity || 0), 0);
-  }
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-    setSubmittedOnce(true);
-    if (form_isValid()) {
-      // Ottieni gli articoli dal carrello
-      const cartItems = CartContext.get();
-      
-      // Aggiungi l'ordine allo storico
-      HistoryContext.add({
-        id: Math.floor(Math.random() * 1000000),
-        date: new Date().toISOString(),
-        items: cartItems,
-        total: calculateTotal(cartItems),
-        method: "delivery",
-        // address: formData.address,
-        // city: formData.city,
-        // country: formData.country
+    if (isValid) {
+      // Salva i dati della carta di credito in AuthContext
+      authContext.setCard({
+        cardNumber: formData.cardNumber,
+        cardHolder: formData.cardHolder,
+        expiryDate: formData.expiryDate,
+        cvv: formData.cvv
       });
-      
-      // Svuota il carrello
-      CartContext.clear();
-      
-      setSubmitted(true);
+
+      // Se tutto è valido, reindirizza alla pagina di risultato
+      toast("Carta di credito aggiunta!");
+      to(`/result?method=${method}`, true);
     }
   }
 
-  if (submitted) {
-    return (
-      <div className="alert alert-success text-center" role="alert">
-        <h2>Successo!</h2>
-        <div>Il tuo ordine è stato preso in carico.</div>
-        <div>Verrà spedito a <b>{formData.username}</b></div>
-        <div>all'indirizzo: <b>{formData.address}</b> di
-          <b className='mx-1'>{formData.city}</b>,
-          <b className='mx-1'>{formData.country}</b>
-        </div>
+  function formatCardNumber(value: string) {
+    // Rimuovi tutti i caratteri non numerici
+    const cleanedValue = value.replace(/\D/g, "");
 
-        <CallToAction/>
-      </div>
-    );
+    // Formatta il numero della carta con spazi ogni 4 cifre
+    const formattedValue = cleanedValue.replace(/(\d{4})(?=\d)/g, "$1 ");
+
+    // Limita a 16 cifre
+    return formattedValue.substring(0, 19);
   }
 
-  return (
-    <div className="text-bg-c1 p-4 rounded">
-      <h2>Inserisci i dati di consegna</h2>
-      <form onSubmit={handleSubmit} aria-label="Form di consegna">
-        {formFields.map(field => (
-          <div key={field.key} className="mb-3">
-            <label htmlFor={field.key} className="form-label">
-              <span>{field.label}</span>
-              {field.asterisk && <b className="text-danger mx-2" aria-label="Campo obbligatorio">*</b>}
-            </label>
-            <input type={field.type}
-                  id={field.key}
-                  name={field.key}
-                  value={formData[field.key as keyof User] || ''}
-                  onInput={handleChange}
-                  placeholder={field.placeholder}
-                  aria-label={field.label}
-                  className={`form-control ${(submittedOnce || errors[field.key]) ? (errors[field.key] ? 'is-invalid' : 'is-valid') : ''}`}/>
-            {(submittedOnce || errors[field.key]) && errors[field.key] &&
-              <div className="invalid-feedback" role="alert">{errors[field.key]}</div>
-            }
-          </div>
-        ))}
-        <button type="submit" className="btn btn-primary" aria-label="Invia form">Invia</button>
-      </form>
-    </div>
-  );
-}
+  function formatExpiryDate(value: string) {
+    // Rimuovi tutti i caratteri non numerici
+    const cleanedValue = value.replace(/\D/g, "");
 
-function CallToAction() {
-  const navigate = useNavigate()
-  async function to(path: string) {
-    if (!await agree('Uscire dalla pagina?', 'Esci', 'danger')) return;
+    // Aggiungi la barra dopo i primi 2 caratteri
+    if (cleanedValue.length > 2) {
+      return cleanedValue.substring(0, 2) + "/" + cleanedValue.substring(2, 4);
+    }
+
+    return cleanedValue;
+  }
+
+  async function to(path: string, skipConfirm?: boolean) {
+    if (!skipConfirm && !await agree('Uscire dalla pagina?', 'Esci', 'danger')) return;
     navigate(path);
   }
 
-  const buttons = [
-    { label: "Ordina di nuovo", 
-      handleclick: () => to('/dishes'), 
-      icon: "bi-fork-knife", 
-      btnClass: "btn-primary" 
-    },
-    { label: "Mostra storico", 
-      handleclick: () => to('/history'), 
-      icon: "bi-clock-history", 
-      btnClass: "btn-outline-primary" 
-    }
-  ];
+  async function backToCart() {
+    if (!await agree('Tornare al carrello?', 'Torna', 'danger')) return;
+    navigate('/cart');
+  }
 
-  return <>
-    <div className="d-flex justify-content-center gap-2 mt-2" role="group" aria-label="Opzioni di ordinazione">
-      {buttons.map((button, index) => (
-        <button key={index}
-                className={`btn ${button.btnClass} d-grid cols-auto-1fr align-items-center`}
-                onClick={button.handleclick}
-                aria-label={button.label}>
-          <i className={`bi ${button.icon} me-2`} aria-hidden="true"></i>
-          <span>{button.label}</span>
+  return (
+    <article id="CreditCard" className="container p-0 max-w-400px" lang="it" role="article">
+      <header className="p-3 mb-3 text-bg-primary shadow d-flex justify-content-between" role="banner">
+        <h1 className="m-0">Pagamento</h1>
+        <button className="btn"
+                onClick={() => backToCart()}
+                aria-label="Chiudi pagina">
+          <b className="bi bi-x-lg" aria-hidden="true"></b>
         </button>
-      ))}
-    </div>
-  </>
-}
+      </header>
+
+      <main className="p-2" role="main">
+        <div className="text-bg-c1 p-4 rounded">
+          <h2>Inserisci i dati della carta per completare l'ordine</h2>
+          <form onSubmit={(e)=> handleSubmit(e)} aria-label="Form carta di credito">
+            {formFields.map(field => {
+              // Determina il maxLength in base al campo
+              let maxLength: number | undefined;
+              if (field.key === 'cardNumber') maxLength = 19; // 16 cifre + 3 spazi
+              else if (field.key === 'expiryDate') maxLength = 5; // MM/YY
+              else if (field.key === 'cvv') maxLength = 4; // 3 o 4 cifre
+
+              return (
+                <div key={field.key} className="mb-3">
+                  <label htmlFor={field.key} className="form-label">
+                    <span>{field.label}</span>
+                    {field.asterisk && <b className="text-danger mx-2" aria-label="Campo obbligatorio">*</b>}
+                  </label>
+                  <input type={field.type}
+                        id={field.key}
+                        name={field.key}
+                        value={formData[field.key as keyof CreditCard] || ''}
+                        onChange={handleChange}
+                        placeholder={field.placeholder}
+                        aria-label={field.label}
+                        maxLength={maxLength}
+                        className={`form-control ${(submittedOnce || errors[field.key]) ? (errors[field.key] ? 'is-invalid' : 'is-valid') : ''}`}/>
+                  {(submittedOnce || errors[field.key]) && errors[field.key] &&
+                    <div className="invalid-feedback" role="alert">{errors[field.key]}</div>
+                  }
+                </div>
+              );
+            })}
+
+            <button type="submit" className="btn btn-primary" 
+                    aria-label="Imposta metodo di pagamento"
+              >Imposta metodo di pagamento</button>
+          </form>
+        </div>
+      </main>
+    </article>
+  );
+};
