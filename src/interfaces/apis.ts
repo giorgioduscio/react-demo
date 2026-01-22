@@ -6,7 +6,7 @@ export interface Article {
   imageUrl: string;
 }
 
-export type Table = {
+export interface Table {
   id: number;
   key: string;
   avaiable: boolean;

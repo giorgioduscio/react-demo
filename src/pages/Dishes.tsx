@@ -50,7 +50,8 @@ export function Dishes() {
 
                 <figure className='m-0'>
                   <img src={article.imageUrl} alt={`Immagine di ${article.label}`} 
-                       className='img-fluid object-fit-cover max-h-200px w-100'/>
+                       className='img-fluid object-fit-cover max-h-200px w-100'
+                       loading="lazy"/>
                 </figure>
 
                 <div className='p-3'>

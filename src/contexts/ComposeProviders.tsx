@@ -4,22 +4,18 @@ import { CartProvider } from './CartContext';
 import { HistoryProvider } from './HistoryContext';
 import { AuthProvider } from './AuthContext';
 
-type Provider = ({ children }: { children: ReactNode }) => JSX.Element;
-
 interface ComposeProvidersProps {
-  providers: Provider[];
+  providers?: (({ children }: { children: ReactNode }) => JSX.Element)[];
   children: ReactNode;
 }
 
-const providers = [TablesProvider, CartProvider, HistoryProvider, AuthProvider];
-function ComposeProviders({ providers, children }: ComposeProvidersProps) {
-  return (
-    <>
-      {providers.reduceRight((acc, Provider) => {
-        return <Provider>{acc}</Provider>;
-      }, children)}
-    </>
-  );
-};
+const defaultProviders = [TablesProvider, CartProvider, HistoryProvider, AuthProvider];
 
-export { ComposeProviders, providers };
+function ComposeProviders({ providers = defaultProviders, children }: ComposeProvidersProps) {
+  return providers.reduceRight(
+    (acc, Provider) => <Provider>{acc}</Provider>,
+    children
+  );
+}
+
+export { ComposeProviders, defaultProviders as providers };
