@@ -1,12 +1,15 @@
-import React, { useState, useMemo } from 'react';
+import React, { useMemo } from 'react';
 import { articles } from '../assets/articles';
-import { useCart } from '../contexts/CartContext';
-import { toast } from '../tools/feedbacksUI';
+import { Counter } from '../shared/Counter';
+import type { Article } from '../interfaces/apis';
 
 export function Dishes() {
-  document.title = 'Piatti'
+  // Sposta document.title in useEffect per seguire best practice
+  React.useEffect(() => {
+    document.title = 'Piatti';
+  }, []);
  
-  function getArticles() {
+  function getArticles() :(Article & { icon: string })[] {
     const ordine =['antipasti', 'primi', 'pizze', 'secondi carne', 'secondi pesce', 'bibite'];
     // Ordina gli articoli in base all'ordine specificato
     const sortedArticles = [...articles].sort((a, b) => {
@@ -14,7 +17,26 @@ export function Dishes() {
       const indexB = ordine.indexOf(b.section.toLowerCase());
       return indexA - indexB;
     });
-    return sortedArticles;
+    
+    // Aggiungi la proprietà icon a ogni articolo
+    return sortedArticles.map(article => ({
+      ...article,
+      icon: getIconForArticle(article)
+    }));
+  }
+  
+  // Funzione per determinare l'icona in base al tipo di articolo
+  function getIconForArticle(article: Article) {
+    const section = article.section.toLowerCase();
+    
+    if (section === 'antipasti') return 'bi-cup-straw';
+    if (section === 'primi') return 'bi-bowl-steam';
+    if (section === 'pizze') return 'bi-pizza';
+    if (section === 'secondi carne') return 'bi-knife';
+    if (section === 'secondi pesce') return 'bi-fish';
+    if (section === 'bibite') return 'bi-cup-hot';
+    
+    return 'bi-utensils'; // Icona predefinita
   }
 
   // Variabile reattiva con le sezioni uniche degli articoli
@@ -56,16 +78,17 @@ export function Dishes() {
             <React.Fragment key={i}>
               {/* Mostra l'intestazione se è il primo articolo della categoria o se la categoria cambia */}
               {(i === 0 || article.section !== _articles[i - 1].section) && 
-                <h3 className='mt-3 p-3 text-bg-c1 w-100 sticky-top z-1' 
+                <h3 className='p-3 py-2 m-0 text-bg-c1 w-100 sticky-top z-1' 
                     id={`section-${article.section}`}>
-                  {article.section}
+                  <span className={"me-2 bi "+ article.icon}></span>
+                  <span>{article.section}</span>
                 </h3>
               }
 
-              <div className="mx-2 border rounded flex-auto text-bg-c1 position-relative" 
+              <div className="mx-2 border rounded flex-auto position-relative shadow" 
                    role="listitem" aria-labelledby={`article-${article.id}`}>
                 <h4 className='p-3 m-0 d-flex gap-2' id={`article-${article.id}`}>
-                  <span>{article.price}€</span>
+                  <span className="me-2">{article.price}€</span>
                   <span>{article.label}</span>
                 </h4>
 
@@ -88,50 +111,4 @@ export function Dishes() {
 
     </article>
   )
-}
-
-  
-// Componente Counter per gestire la quantità
-function Counter({ articleId }: { articleId: number }) {
-  const { add, get } = useCart();
-
-  const [quantity, setQuantity] = useState(() => {
-    const cartItem = get(articleId)[0];
-    return cartItem ? cartItem.quantity : 0;
-  });
-  
-  function handleClick(isIncrement:boolean) {
-    if(isIncrement){
-      const newQuantity = quantity + 1;
-      setQuantity(newQuantity);
-      add(articleId, 1); // Aggiungi al carrello
-      toast("Piatto aggiunto al carrello", "success");
-
-    } else if (quantity > 0) {
-      const newQuantity = quantity - 1;
-      setQuantity(newQuantity);
-      add(articleId, -1); // Rimuovi dal carrello (quantità negativa)
-      toast("Piatto rimosso dal carrello", "danger")
-    }
-  }
-  
-  return (
-    <div className="position-absolute text-bg-c1 rounded me-2" 
-         style={{top:'25%', right:'0'}}>
-      <div data-counter className='d-flex flex-column align-items-center'>
-        <button onClick={()=> handleClick(true)}
-                className='h-40px max-w-40px btn btn-primary circle'
-                aria-label="Aumenta quantità">
-          <i className="bi bi-plus-lg" aria-hidden="true"></i>
-        </button>
-        <span className='p-2 m-auto' aria-live="polite">{quantity}</span>
-        <button onClick={()=> handleClick(false)}
-                disabled={quantity === 0}
-                className='h-40px max-w-40px btn btn-secondary circle '
-                aria-label="Diminuisci quantità">
-          <i className="bi bi-dash" aria-hidden="true"></i>
-        </button>
-      </div>
-    </div>
-  );
 }

@@ -7,14 +7,17 @@ import { createBrowserRouter, RouterProvider } from 'react-router-dom';
 import routes from './routes.tsx';
 import { ComposeProviders, providers } from './contexts/ComposeProviders.tsx';
 import customStyle from './styles/styles.ts';
+import { ErrorBoundary } from './shared/ErrorBoundary';
 
 customStyle();
 const router = createBrowserRouter(routes);
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
-    <ComposeProviders providers={providers}>
-      <RouterProvider router={router} />
-    </ComposeProviders>
+    <ErrorBoundary>
+      <ComposeProviders providers={providers}>
+        <RouterProvider router={router} />
+      </ComposeProviders>
+    </ErrorBoundary>
   </StrictMode>
 );

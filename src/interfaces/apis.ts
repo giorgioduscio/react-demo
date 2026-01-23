@@ -1,4 +1,5 @@
 export interface Article {
+  id: number;
   section: string;
   label: string;
   price: number;

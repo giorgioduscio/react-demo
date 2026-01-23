@@ -6,7 +6,11 @@ import type { Article } from '../interfaces/apis';
 import { useNavigate } from 'react-router-dom';
 
 export function Cart() {
-  document.title = 'Carrello';
+  // Sposta document.title in useEffect per seguire best practice
+  React.useEffect(() => {
+    document.title = 'Carrello';
+  }, []);
+  
   const navigate = useNavigate();
   const cartContext = useCart();
   const [cartItems, setCartItems] = React.useState<CartItem[]>(() => cartContext.get() as CartItem[]); 
@@ -31,7 +35,7 @@ export function Cart() {
   // Aggiorna lo stato locale quando il carrello cambia
   React.useEffect(() => {
     setCartItems(cartContext.get() as CartItem[]);
-  }, [cartContext.get]);
+  }, [cartContext]);
 
 
   // Ritorna un array di oggetti che uniscono l'item del carrello con il rispettivo articolo
