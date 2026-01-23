@@ -11,11 +11,9 @@ export default function App() {
   }, [location.pathname]);
 
   return (
-    <div className="bg-wood">
-      <div className='text-bg-st' style={{minHeight:'100vh'}}>
-        <Outlet />
-        <Navigation />
-      </div>
+    <div className='text-bg-c1' style={{minHeight:'100vh'}}>
+      <Outlet />
+      <Navigation />
     </div>
   );
 }

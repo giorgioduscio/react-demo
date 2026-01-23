@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useMemo } from 'react';
 import { articles } from '../assets/articles';
 import { useCart } from '../contexts/CartContext';
 import { toast } from '../tools/feedbacksUI';
@@ -17,6 +17,11 @@ export function Dishes() {
     return sortedArticles;
   }
 
+  // Variabile reattiva con le sezioni uniche degli articoli
+  const sections = useMemo(() => {
+    return Array.from(new Set(getArticles().map(article => article.section)));
+  }, [articles]);
+
   return(
     <article id="Dishes" className="container p-0 max-w-400px" lang="it" role="article">
       <header className="p-3 mb-3 text-bg-primary shadow" role="banner">
@@ -29,13 +34,29 @@ export function Dishes() {
           <p>Scopri tutte le nostre prelibatezze organizzate per categoria</p>
         </div>
         
+        {/* Summary navigation */}
+        <div className="mb-3 p-3">
+          <h2 className="mb-2">Categorie</h2>
+          <div className="d-flex gap-2 overflow-x-auto" 
+               style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
+            {sections.map((section, index) => (
+              <a key={index}
+                 href={`#section-${section}`}
+                 className="btn btn-secondary flex-shrink-0"
+                 role="button">
+                {section}
+              </a>
+            ))}
+          </div>
+        </div>
+
         {/* Menu sections */}
         <div className="d-flex flex-wrap gap-2" role="list">
           {getArticles().map((article, i, _articles) => (
             <React.Fragment key={i}>
               {/* Mostra l'intestazione se è il primo articolo della categoria o se la categoria cambia */}
               {(i === 0 || article.section !== _articles[i - 1].section) && 
-                <h3 className='mt-3 p-3 w-100 text-bg-c2 sticky-top z-1 shadow' 
+                <h3 className='mt-3 p-3 text-bg-c1 w-100 sticky-top z-1' 
                     id={`section-${article.section}`}>
                   {article.section}
                 </h3>
