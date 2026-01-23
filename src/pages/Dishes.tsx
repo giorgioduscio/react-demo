@@ -57,8 +57,9 @@ export function Dishes() {
         </div>
         
         {/* Summary navigation */}
-        <div className="mb-3 p-3">
-          <h2 className="mb-2">Categorie</h2>
+        <h2 className="m-3">Categorie</h2>
+        <div className="d-grid gap-1 cols-auto-1fr-auto align-items-center">
+          <i className="bi bi-caret-left-fill"></i>
           <div className="d-flex gap-2 overflow-x-auto" 
                style={{scrollbarWidth: 'none', msOverflowStyle: 'none'}}>
             {sections.map((section, index) => (
@@ -70,6 +71,7 @@ export function Dishes() {
               </a>
             ))}
           </div>
+          <i className="bi bi-caret-right-fill"></i>
         </div>
 
         {/* Menu sections */}
@@ -78,7 +80,7 @@ export function Dishes() {
             <React.Fragment key={i}>
               {/* Mostra l'intestazione se è il primo articolo della categoria o se la categoria cambia */}
               {(i === 0 || article.section !== _articles[i - 1].section) && 
-                <h3 className='p-3 py-2 m-0 text-bg-c1 w-100 sticky-top z-1' 
+                <h3 className='p-3 m-0 text-bg-c1 w-100 sticky-top z-1' 
                     id={`section-${article.section}`}>
                   <span className={"me-2 bi "+ article.icon}></span>
                   <span>{article.section}</span>

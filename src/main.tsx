@@ -8,9 +8,13 @@ import routes from './routes.tsx';
 import { ComposeProviders, providers } from './contexts/ComposeProviders.tsx';
 import customStyle from './styles/styles.ts';
 import { ErrorBoundary } from './shared/ErrorBoundary';
+import { backToTop_init } from './tools/feedbacksUI.ts';
 
 customStyle();
 const router = createBrowserRouter(routes);
+
+// Inizializza il pulsante "Back to Top"
+backToTop_init();
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
